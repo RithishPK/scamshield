@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ScamShield – Job Scam Detector</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #080b10;
+      --surface: #0e1320;
+      --surface2: #131929;
+      --border: #1e2a3a;
+      --text: #e8edf5;
+      --muted: #5a6a80;
+      --accent: #3b82f6;
+      --danger: #ef4444;
+      --warn: #f59e0b;
+      --safe: #10b981;
+      --danger-dim: rgba(239,68,68,0.1);
+      --warn-dim: rgba(245,158,11,0.1);
+      --safe-dim: rgba(16,185,129,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow blobs */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .shield-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+
+    .shield-icon svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 12px rgba(59,130,246,0.5));
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .tagline {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface);
+    }
+
+    /* Input card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .input-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      padding: 14px 16px;
+      resize: vertical;
+      min-height: 140px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea::placeholder { color: var(--muted); }
+    textarea:focus { border-color: var(--accent); }
+
+    .analyze-btn {
+      margin-top: 14px;
+      width: 100%;
+      padding: 15px;
+      background: var(--accent);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    .analyze-btn:hover:not(:disabled) {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+    }
+
+    .analyze-btn:disabled {
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 32px 0 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loader.active { display: flex; }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    /* Result */
+    .result {
+      margin-top: 20px;
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .result.active { display: flex; }
+
+    /* Score section */
+    .score-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      margin-bottom: 12px;
+    }
+
+    .score-ring-wrap { flex-shrink: 0; }
+
+    .score-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .score-ring svg {
+      transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
+    }
+
+    .score-ring-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 7;
+    }
+
+    .score-ring-fill {
+      fill: none;
+      stroke-width: 7;
+      stroke-linecap: round;
+      stroke-dasharray: 251;
+      stroke-dashoffset: 251;
+      transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.3s;
+    }
+
+    .score-num {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .score-info { flex: 1; }
+
+    .verdict-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .verdict-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+
+    .score-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 600;
+    }
+
+    .scam-pattern {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .scam-pattern strong { color: var(--text); font-weight: 600; }
+
+    /* Flags section */
+    .flags-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+    }
+
+    .section-head {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    .tag-danger {
+      background: var(--danger-dim);
+      color: #fca5a5;
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+
+    .tag-safe {
+      background: var(--safe-dim);
+      color: #6ee7b7;
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-style: italic;
+    }
+
+    /* Advice */
+    .advice-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 24px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .advice-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .advice-text {
+      font-size: 0.9rem;
+      color: #a0aec0;
+      line-height: 1.6;
+    }
+
+    /* Color states */
+    .state-danger { color: var(--danger); }
+    .state-warn   { color: var(--warn); }
+    .state-safe   { color: var(--safe); }
+
+    .pill-danger { background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+    .pill-warn   { background: var(--warn-dim);   color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+    .pill-safe   { background: var(--safe-dim);   color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+
+    .dot-danger { background: var(--danger); }
+    .dot-warn   { background: var(--warn); }
+    .dot-safe   { background: var(--safe); }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      z-index: 1;
+      position: relative;
+    }
+
+    .footer span { color: var(--accent); }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--border); }
+      50%       { border-color: var(--accent); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="shield-icon">
+        <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M28 4L8 13v14c0 12.5 8.5 24.2 20 27 11.5-2.8 20-14.5 20-27V13L28 4z"
+                fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M20 28l6 6 10-12" stroke="#3b82f6" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo">Scam<span>Shield</span></div>
+      <div class="tagline">AI-powered job scam detector for WhatsApp &amp; Telegram messages</div>
+      <div class="badge-row">
+        <span class="badge">🤖 Llama 3.3 70B</span>
+        <span class="badge">⚡ Built with trae.ai</span>
+        <span class="badge">🇮🇳 India-focused</span>
+      </div>
+    </div>
+
+    <!-- Input card -->
+    <div class="card">
+      <div class="input-label">Paste job message</div>
+      <textarea id="msgInput"
+        placeholder="e.g. 'Work from home, earn Rs 50,000/month guaranteed. Pay Rs 500 registration fee. Call now: 9876543210'"></textarea>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Analyze Message
+      </button>
+
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        Analyzing with AI...
+      </div>
+
+      <!-- Result -->
+      <div class="result" id="result">
+
+        <!-- Score -->
+        <div class="score-section">
+          <div class="score-ring-wrap">
+            <div class="score-ring">
+              <svg viewBox="0 0 100 100">
+                <circle class="score-ring-bg" cx="50" cy="50" r="40"/>
+                <circle class="score-ring-fill" id="ringFill" cx="50" cy="50" r="40"/>
+              </svg>
+              <div class="score-num" id="scoreNum">0</div>
+            </div>
+          </div>
+          <div class="score-info">
+            <div class="score-label">Risk Score</div>
+            <div class="verdict-pill" id="verdictPill">
+              <span class="dot" id="verdictDot"></span>
+              <span id="verdictText"></span>
+            </div>
+            <div class="scam-pattern" id="scamPattern"></div>
+          </div>
+        </div>
+
+        <!-- Red flags -->
+        <div class="flags-section">
+          <div class="section-head">Red Flags</div>
+          <div class="tags-wrap" id="redFlags"></div>
+        </div>
+
+        <!-- Safe signals -->
+        <div class="flags-section">
+          <div class="section-head">Safe Signals</div>
+          <div class="tags-wrap" id="safeSignals"></div>
+        </div>
+
+        <!-- Advice -->
+        <div class="advice-section">
+          <div class="advice-icon">💡</div>
+          <div class="advice-text" id="adviceText"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="footer">
+      Built by <span>Mind Flayer Hunters</span> · HackArena 2.0 Bangalore Zonals
+    </div>
+  </div>
+
+  <script>
+    async function analyze() {
+      const msg = document.getElementById('msgInput').value.trim();
+      if (!msg) return;
+
+      const btn     = document.getElementById('analyzeBtn');
+      const loader  = document.getElementById('loader');
+      const result  = document.getElementById('result');
+
+      btn.disabled = true;
+      loader.classList.add('active');
+      result.classList.remove('active');
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        });
+        const data = await res.json();
+        renderResult(data);
+        result.classList.add('active');
+      } catch (e) {
+        alert('Cannot reach backend. Make sure uvicorn is running on port 8000.');
+      } finally {
+        btn.disabled = false;
+        loader.classList.remove('active');
+      }
+    }
+
+    function renderResult(data) {
+      const score = data.risk_score ?? 0;
+
+      // Determine state
+      let state, pillClass, dotClass, verdictLabel;
+      if (score >= 70) {
+        state = 'danger'; pillClass = 'pill-danger'; dotClass = 'dot-danger';
+      } else if (score >= 40) {
+        state = 'warn'; pillClass = 'pill-warn'; dotClass = 'dot-warn';
+      } else {
+        state = 'safe'; pillClass = 'pill-safe'; dotClass = 'dot-safe';
+      }
+
+      const colorMap = { danger: '#ef4444', warn: '#f59e0b', safe: '#10b981' };
+      const color = colorMap[state];
+
+      // Animate ring
+      const ring = document.getElementById('ringFill');
+      const circumference = 251;
+      const offset = circumference - (score / 100) * circumference;
+      ring.style.stroke = color;
+      setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
+
+      // Animate score number
+      animateNumber('scoreNum', score, color);
+
+      // Verdict pill
+      const pill = document.getElementById('verdictPill');
+      pill.className = 'verdict-pill ' + pillClass;
+      document.getElementById('verdictDot').className = 'dot ' + dotClass;
+      document.getElementById('verdictText').textContent = data.verdict ?? '';
+
+      // Scam pattern
+      const pat = document.getElementById('scamPattern');
+      pat.innerHTML = data.scam_type
+        ? `Pattern: <strong>${data.scam_type}</strong>`
+        : '';
+
+      // Red flags
+      const rf = document.getElementById('redFlags');
+      rf.innerHTML = (data.red_flags || []).length
+        ? data.red_flags.map(f => `<span class="tag tag-danger">⚠ ${f}</span>`).join('')
+        : '<span class="empty-state">None detected</span>';
+
+      // Safe signals
+      const ss = document.getElementById('safeSignals');
+      ss.innerHTML = (data.safe_signals || []).length
+        ? data.safe_signals.map(s => `<span class="tag tag-safe">✓ ${s}</span>`).join('')
+        : '<span class="empty-state">None detected</span>';
+
+      // Advice
+      document.getElementById('adviceText').textContent = data.advice ?? '';
+    }
+
+    function animateNumber(id, target, color) {
+      const el = document.getElementById(id);
+      el.style.color = color;
+      let current = 0;
+      const step = Math.ceil(target / 40);
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current;
+        if (current >= target) clearInterval(timer);
+      }, 20);
+    }
+  </script>
+</body>
+</html>
