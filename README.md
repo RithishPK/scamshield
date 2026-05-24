@@ -1,254 +1,185 @@
-\# ScamShield — Fake Job Scam Detector (FastAPI + Groq)
+# 🛡️ ScamShield — AI Job Scam Detector
 
+<div align="center">
 
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-Llama%203.3%2070B-F55036?style=for-the-badge)
+![trae.ai](https://img.shields.io/badge/Built%20with-trae.ai-00C853?style=for-the-badge)
 
-ScamShield is a FastAPI backend that analyzes \*\*job scam messages\*\* (especially those circulated on \*\*WhatsApp/Telegram in India\*\*) and returns a structured risk assessment using the \*\*Groq API\*\* (Llama 3.3 70B).
+**AI-powered detector for fake job messages on WhatsApp & Telegram in India**
 
+*HackArena 2.0 — Bangalore Zonals (trae.ai Track)*
+*Team: Mind Flayer Hunters — Nitte Meenakshi Institute of Technology*
 
+</div>
 
-Built for HackArena 2.0 — Bangalore Zonals (trae.ai track) by \*\*Mind Flayer Hunters\*\*, Nitte Meenakshi Institute of Technology.
+---
 
+## 🚨 The Problem
 
+Every day, millions of Indians receive fake job messages on WhatsApp and Telegram — promising guaranteed income, work-from-home opportunities, and instant hiring. Victims pay ₹500–₹5,000 in "registration fees" before realizing it's a scam. No tool existed specifically for these short, informal messages — until now.
 
-\## What it does
+---
 
+## ✅ What ScamShield Does
 
+Paste any suspicious job message and get back an instant AI-powered risk assessment:
 
-Send a suspicious message to the API and get back:
+| Field | Description |
+|-------|-------------|
+| `risk_score` | 0–100 risk score |
+| `verdict` | `Safe` / `Suspicious` / `Likely Scam` / `Definite Scam` |
+| `scam_type` | `Registration Fee Scam`, `Guaranteed Job Scam`, `Work From Home Scam`, `Data Harvesting Scam`, `Impersonation Scam` |
+| `red_flags` | Specific suspicious phrases/patterns detected |
+| `safe_signals` | Legitimate signals found in the message |
+| `advice` | One actionable sentence for the user |
 
-\- `risk\_score` (0–100)
+> 💡 **Smart Fallback:** If Groq rate-limits during a live demo, a keyword-based cache returns the correct response automatically — zero downtime.
 
-\- `verdict`: `Safe` / `Suspicious` / `Likely Scam` / `Definite Scam`
+---
 
-\- `scam\_type`: `Registration Fee Scam`, `Guaranteed Job Scam`, `Work From Home Scam`, `Data Harvesting Scam`, `Impersonation Scam`, `Other`, or `null`
+## 🗂️ Project Structure
 
-\- `red\_flags`, `safe\_signals`
-
-\- One-line `advice`
-
-
-
-The backend includes a \*\*smart fallback\*\* (keyword-based cache) if Groq rate-limits during demos — zero downtime.
-
-
-
-\## Project structure
-
-
-
-```text
-
+```
 scam-detector/
-
-├─ backend/
-
-│  ├─ main.py        # FastAPI app (POST /analyze, GET /)
-
-│  └─ evaluate.py    # 20-message labeled test set, writes CSV evaluation report
-
-├─ frontend/
-
-│  └─ index.html     # Static UI — animated risk gauge, red flags, safe signals
-
-└─ requirements.txt
-
+├── backend/
+│   ├── main.py          # FastAPI app — POST /analyze, GET /
+│   └── evaluate.py      # 20-message labeled test set + CSV evaluation report
+├── frontend/
+│   └── index.html       # Single-file UI — animated risk gauge, red flags, safe signals
+└── requirements.txt
 ```
 
+---
 
+## ⚙️ Setup
 
-\## Setup
+### Prerequisites
+- Python 3.10+
+- Free Groq API key from [console.groq.com](https://console.groq.com)
 
+### 1. Clone the repo
 
+```bash
+git clone https://github.com/RithishPK/scamshield.git
+cd scamshield
+```
 
-\### 1) Prerequisites
+### 2. Create & activate virtual environment
 
-\- Python 3.10+
-
-\- A free Groq API key from console.groq.com
-
-
-
-\### 2) Create \& activate a virtual environment
-
-
-
-\*\*Windows\*\*
-
+**Windows**
 ```powershell
-
 python -m venv venv
-
-venv\\Scripts\\activate
-
+venv\Scripts\activate
 ```
 
-
-
-\*\*macOS/Linux\*\*
-
+**macOS / Linux**
 ```bash
-
 python -m venv venv
-
 source venv/bin/activate
-
 ```
 
-
-
-\### 3) Install dependencies
-
-
+### 3. Install dependencies
 
 ```bash
-
 pip install -r requirements.txt
-
 ```
 
-
-
-\## Configuration
-
-
+### 4. Configure environment
 
 Create `backend/.env`:
 
-
-
 ```env
-
-GROQ\_API\_KEY=your\_groq\_api\_key\_here
-
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
+> ⚠️ Never commit `.env` to GitHub. It is already listed in `.gitignore`.
 
+---
 
-\*\*Never commit `.env` to GitHub.\*\* It is already in `.gitignore`.
-
-
-
-\## Run the backend
-
-
+## 🚀 Run the Backend
 
 ```bash
-
 cd backend
-
 uvicorn main:app --reload
-
 ```
 
+- **API:** http://127.0.0.1:8000
+- **Swagger docs:** http://127.0.0.1:8000/docs
 
+---
 
-\- API: http://127.0.0.1:8000
+## 🌐 Run the Frontend
 
-\- Swagger docs: http://127.0.0.1:8000/docs
+1. Start the backend (above)
+2. Open `frontend/index.html` in your browser
+3. Paste any WhatsApp or Telegram job message → click **Analyze**
 
+---
 
+## 📡 API Reference
 
-\## API usage
+### `POST /analyze`
 
-
-
-\### Analyze a message
-
-
-
-```bash
-
-curl -X POST http://127.0.0.1:8000/analyze \\
-
-&#x20; -H "Content-Type: application/json" \\
-
-&#x20; -d "{\\"message\\":\\"Urgent hiring! Work from home. Earn Rs 800/hour. Registration fee Rs 500 only. WhatsApp now.\\"}"
-
-```
-
-
-
-Example response:
-
-
-
+**Request**
 ```json
-
-{
-
-&#x20; "risk\_score": 94,
-
-&#x20; "verdict": "Likely Scam",
-
-&#x20; "scam\_type": "Registration Fee Scam",
-
-&#x20; "red\_flags": \["Upfront registration fee demanded", "Unrealistic income promise"],
-
-&#x20; "safe\_signals": \[],
-
-&#x20; "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates."
-
-}
-
+{ "message": "Urgent hiring! Work from home. Earn Rs 800/hour. Registration fee Rs 500 only." }
 ```
 
+**Response**
+```json
+{
+  "risk_score": 94,
+  "verdict": "Likely Scam",
+  "scam_type": "Registration Fee Scam",
+  "red_flags": ["Upfront registration fee demanded", "Unrealistic income promise", "No company name"],
+  "safe_signals": [],
+  "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates."
+}
+```
 
+---
 
-\## Run the frontend
+## 🧪 Evaluation
 
-
-
-1\. Start the backend (see above)
-
-2\. Open `frontend/index.html` in your browser
-
-3\. Paste any WhatsApp or Telegram job message and click \*\*Analyze\*\*
-
-
-
-\## Evaluation
-
-
-
-With the backend running:
-
-
+Run the responsible AI evaluation script against a 20-message labeled test set:
 
 ```bash
-
 cd backend
-
 python evaluate.py
-
 ```
 
+### Results
 
+| Metric | Score |
+|--------|-------|
+| Overall Accuracy | **100%** (20/20) |
+| Scam Precision | **100%** |
+| Scam Recall | **100%** |
+| F1 Score | **100%** |
 
-Runs 20 labeled test messages through the API and prints accuracy, precision, recall, and F1 score. Saves a full CSV report.
+> ⚠️ Honest caveat: Test set was curated. Real-world accuracy on unseen data would be lower.
 
+**Responsible AI principles applied:**
+- ✅ **Transparency** — all predictions logged with scores and reasoning
+- ✅ **Calibration** — accuracy measured against labeled ground truth
+- ✅ **Explainability** — red flags verified against known scam pattern categories
 
+---
 
-\*\*Results on 20-message test set:\*\* 100% accuracy, 100% scam recall, 100% F1.
+## 🛠️ Tech Stack
 
+| Layer | Technology |
+|-------|-----------|
+| Backend | FastAPI, Python 3.10+ |
+| LLM Inference | Groq API (Llama 3.3 70B) |
+| Frontend | HTML, CSS, JavaScript |
+| AI IDE | trae.ai SOLO |
+| Evaluation | Custom responsible AI evaluation script |
 
+---
 
-\## Tech stack
-
-
-
-\- \*\*Backend:\*\* FastAPI, Python, Groq API (Llama 3.3 70B)
-
-\- \*\*Frontend:\*\* HTML, CSS, JavaScript (single file, no framework)
-
-\- \*\*Developed with:\*\* trae.ai (SOLO)
-
-\- \*\*Evaluation:\*\* Responsible AI principles — transparency, calibration, explainability
-
-
-
-\## License
-
-
+## 📄 License
 
 MIT License — free to use and modify.
-
