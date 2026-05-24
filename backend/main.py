@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -24,6 +24,7 @@ app.add_middleware(
 # ── request model ────────────────────────────────────────────────────────────
 class MessageRequest(BaseModel):
     message: str
+
 
 # ── prompts ──────────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are a scam detection expert specializing in fake job messages circulated on WhatsApp and Telegram in India.
@@ -77,25 +78,18 @@ DEMO_CACHE = {
             "Unrealistic income promise",
             "No company name or website",
             "Urgency pressure tactic",
-            "Personal WhatsApp number only"
+            "Personal WhatsApp number only",
         ],
         "safe_signals": [],
-        "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates."
+        "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates.",
     },
     "suspicious": {
         "risk_score": 52,
         "verdict": "Suspicious",
         "scam_type": "Work From Home Scam",
-        "red_flags": [
-            "No company name provided",
-            "Vague job description",
-            "Unsolicited contact"
-        ],
-        "safe_signals": [
-            "No payment mentioned",
-            "Salary is realistic"
-        ],
-        "advice": "Ask for the company name and official website before sharing any personal details."
+        "red_flags": ["No company name provided", "Vague job description", "Unsolicited contact"],
+        "safe_signals": ["No payment mentioned", "Salary is realistic"],
+        "advice": "Ask for the company name and official website before sharing any personal details.",
     },
     "safe": {
         "risk_score": 12,
@@ -106,23 +100,46 @@ DEMO_CACHE = {
             "Official company email domain used",
             "Specific office location provided",
             "No payment requested",
-            "Interview process mentioned"
+            "Interview process mentioned",
         ],
-        "advice": "This message appears legitimate. Verify by calling the company directly using their official website number."
-    }
+        "advice": "This message appears legitimate. Verify by calling the company directly using their official website number.",
+    },
 }
 
 SCAM_KEYWORDS = [
-    "fee", "register", "registration", "pay", "payment", "deposit",
-    "guaranteed", "ghar baithe", "घर बैठे", "premium", "urgent",
-    "limited seats", "apply now", "call now", "whatsapp now",
-    "no interview", "no experience", "earn daily", "part time earn"
+    "fee",
+    "register",
+    "registration",
+    "pay",
+    "payment",
+    "deposit",
+    "guaranteed",
+    "ghar baithe",
+    "घर बैठे",
+    "premium",
+    "urgent",
+    "limited seats",
+    "apply now",
+    "call now",
+    "whatsapp now",
+    "no interview",
+    "no experience",
+    "earn daily",
+    "part time earn",
 ]
 
 SAFE_KEYWORDS = [
-    "interview", "office", "hr@", ".com email", "bring resume",
-    "shortlisted", "scheduled", "department", "joining date"
+    "interview",
+    "office",
+    "hr@",
+    ".com email",
+    "bring resume",
+    "shortlisted",
+    "scheduled",
+    "department",
+    "joining date",
 ]
+
 
 def fallback_response(message: str) -> dict:
     msg = message.lower()
@@ -135,13 +152,30 @@ def fallback_response(message: str) -> dict:
     else:
         return DEMO_CACHE["suspicious"]
 
+
+# ── validation ───────────────────────────────────────────────────────────────
+MIN_MESSAGE_LENGTH = 10  # characters (after trimming)
+
+
 # ── endpoint ─────────────────────────────────────────────────────────────────
 @app.post("/analyze")
 async def analyze_message(req: MessageRequest):
+    message = (req.message or "").strip()
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message cannot be empty.",
+        )
+    if len(message) < MIN_MESSAGE_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.",
+        )
+
     user_content = f"""{FEW_SHOT_EXAMPLES}
 
 Now analyze this message:
-Message: "{req.message}"
+Message: "{message}"
 
 Return exactly this JSON structure:
 {{
@@ -158,10 +192,10 @@ Return exactly this JSON structure:
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content}
+                {"role": "user", "content": user_content},
             ],
             temperature=0.1,
-            timeout=10
+            timeout=10,
         )
         text = response.choices[0].message.content.strip()
         text = re.sub(r"```json|```", "", text).strip()
@@ -170,9 +204,11 @@ Return exactly this JSON structure:
     except Exception as e:
         # Groq rate limit or network failure — return smart cached fallback
         print(f"[FALLBACK TRIGGERED] Reason: {e}")
-        return fallback_response(req.message)
+        return fallback_response(message)
+
 
 # ── health check (useful for Render deployment) ───────────────────────────────
 @app.get("/")
 async def root():
     return {"status": "ScamShield API is running"}
+
