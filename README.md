@@ -9,8 +9,6 @@
 
 **AI-powered detector for fake job messages on WhatsApp & Telegram in India**
 
-*HackArena 2.0 — Bangalore Zonals (trae.ai Track)*
-*Team: Mind Flayer Hunters — Nitte Meenakshi Institute of Technology*
 
 </div>
 
