@@ -464,7 +464,7 @@
       // Show report button only for high risk
       const reportBtn = document.getElementById('reportBtn');
       reportBtn.className = 'report-btn';
-      if (score >= 70) {
+      if (score >= 60) {
         reportBtn.classList.add('visible');
         reportBtn.textContent = '🚨 Report this scam to warn others';
       }
