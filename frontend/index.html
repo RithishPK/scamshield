@@ -37,7 +37,6 @@
       overflow-x: hidden;
     }
 
-    /* Background grid */
     body::before {
       content: '';
       position: fixed;
@@ -50,7 +49,6 @@
       z-index: 0;
     }
 
-    /* Glow blobs */
     body::after {
       content: '';
       position: fixed;
@@ -71,7 +69,6 @@
       z-index: 1;
     }
 
-    /* Header */
     .header {
       text-align: center;
       margin-bottom: 40px;
@@ -82,7 +79,6 @@
       width: 56px;
       height: 56px;
       margin: 0 auto 16px;
-      position: relative;
     }
 
     .shield-icon svg {
@@ -100,9 +96,7 @@
       line-height: 1;
     }
 
-    .logo span {
-      color: var(--accent);
-    }
+    .logo span { color: var(--accent); }
 
     .tagline {
       margin-top: 8px;
@@ -129,14 +123,54 @@
       background: var(--surface);
     }
 
-    /* Input card */
+    /* ── Tabs ── */
+    .tab-row {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+      border-radius: 14px 14px 0 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-bottom: none;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background: var(--surface2);
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.2s;
+      letter-spacing: 0.2px;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+
+    .tab-btn.active {
+      background: var(--surface);
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    /* ── Card ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 0 0 20px 20px;
       padding: 28px;
       animation: fadeUp 0.6s ease 0.1s both;
     }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
     .input-label {
       font-size: 0.78rem;
@@ -166,6 +200,69 @@
     textarea::placeholder { color: var(--muted); }
     textarea:focus { border-color: var(--accent); }
 
+    .char-counter {
+      margin-top: 8px;
+      text-align: right;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* ── File upload zone ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.04);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 2rem; margin-bottom: 10px; }
+
+    .upload-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .upload-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .file-selected {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--accent);
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .file-selected.visible { display: flex; }
+
+    /* ── Buttons ── */
     .analyze-btn {
       margin-top: 14px;
       width: 100%;
@@ -183,7 +280,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      letter-spacing: 0.2px;
     }
 
     .analyze-btn:hover:not(:disabled) {
@@ -200,7 +296,7 @@
       box-shadow: none;
     }
 
-    /* Loader */
+    /* ── Loader ── */
     .loader {
       display: none;
       text-align: center;
@@ -223,7 +319,7 @@
       animation: spin 0.7s linear infinite;
     }
 
-    /* Result */
+    /* ── Result ── */
     .result {
       margin-top: 20px;
       display: none;
@@ -233,6 +329,20 @@
     }
 
     .result.active { display: flex; }
+
+    /* File source banner */
+    .source-banner {
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: none;
+    }
+
+    .source-banner.visible { display: block; }
 
     /* Score section */
     .score-section {
@@ -260,11 +370,7 @@
       height: 100%;
     }
 
-    .score-ring-bg {
-      fill: none;
-      stroke: var(--border);
-      stroke-width: 7;
-    }
+    .score-ring-bg { fill: none; stroke: var(--border); stroke-width: 7; }
 
     .score-ring-fill {
       fill: none;
@@ -300,11 +406,7 @@
       letter-spacing: 0.3px;
     }
 
-    .verdict-pill .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-    }
+    .verdict-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
 
     .score-label {
       font-size: 0.78rem;
@@ -315,15 +417,9 @@
       font-weight: 600;
     }
 
-    .scam-pattern {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
+    .scam-pattern { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
     .scam-pattern strong { color: var(--text); font-weight: 600; }
 
-    /* Flags section */
     .flags-section {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -364,25 +460,11 @@
       line-height: 1.3;
     }
 
-    .tag-danger {
-      background: var(--danger-dim);
-      color: #fca5a5;
-      border: 1px solid rgba(239,68,68,0.2);
-    }
+    .tag-danger { background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+    .tag-safe   { background: var(--safe-dim);   color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
 
-    .tag-safe {
-      background: var(--safe-dim);
-      color: #6ee7b7;
-      border: 1px solid rgba(16,185,129,0.2);
-    }
+    .empty-state { color: var(--muted); font-size: 0.88rem; font-style: italic; }
 
-    .empty-state {
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-style: italic;
-    }
-
-    /* Advice */
     .advice-section {
       background: var(--surface2);
       border: 1px solid var(--border);
@@ -393,22 +475,8 @@
       align-items: flex-start;
     }
 
-    .advice-icon {
-      font-size: 1.1rem;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    .advice-text {
-      font-size: 0.9rem;
-      color: #a0aec0;
-      line-height: 1.6;
-    }
-
-    /* Color states */
-    .state-danger { color: var(--danger); }
-    .state-warn   { color: var(--warn); }
-    .state-safe   { color: var(--safe); }
+    .advice-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .advice-text { font-size: 0.9rem; color: #a0aec0; line-height: 1.6; }
 
     .pill-danger { background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
     .pill-warn   { background: var(--warn-dim);   color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
@@ -418,7 +486,6 @@
     .dot-warn   { background: var(--warn); }
     .dot-safe   { background: var(--safe); }
 
-    /* Footer */
     .footer {
       margin-top: 40px;
       text-align: center;
@@ -430,25 +497,15 @@
 
     .footer span { color: var(--accent); }
 
-    /* Animations */
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes pulse-border {
-      0%, 100% { border-color: var(--border); }
-      50%       { border-color: var(--accent); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -465,7 +522,7 @@
         </svg>
       </div>
       <div class="logo">Scam<span>Shield</span></div>
-      <div class="tagline">AI-powered job scam detector for WhatsApp &amp; Telegram messages</div>
+      <div class="tagline">AI-powered job scam detector for WhatsApp, Telegram &amp; documents</div>
       <div class="badge-row">
         <span class="badge">🤖 Llama 3.3 70B</span>
         <span class="badge">⚡ Built with trae.ai</span>
@@ -473,25 +530,67 @@
       </div>
     </div>
 
-    <!-- Input card -->
-    <div class="card">
-      <div class="input-label">Paste job message</div>
-      <textarea id="msgInput"
-        placeholder="e.g. 'Work from home, earn Rs 50,000/month guaranteed. Pay Rs 500 registration fee. Call now: 9876543210'"></textarea>
-      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        Analyze Message
+    <!-- Tabs -->
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab('text')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Paste Message
       </button>
+      <button class="tab-btn" onclick="switchTab('file')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Upload PDF / File
+      </button>
+    </div>
 
+    <!-- Card -->
+    <div class="card">
+
+      <!-- Tab: Text -->
+      <div class="tab-panel active" id="panel-text">
+        <div class="input-label">Paste job message</div>
+        <textarea id="msgInput"
+          placeholder="e.g. 'Work from home, earn Rs 50,000/month guaranteed. Pay Rs 500 registration fee. Call now: 9876543210'"></textarea>
+        <div class="char-counter" id="charCounter">0 characters</div>
+        <button class="analyze-btn" id="analyzeBtnText" onclick="analyzeText()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Analyze Message
+        </button>
+      </div>
+
+      <!-- Tab: File -->
+      <div class="tab-panel" id="panel-file">
+        <div class="input-label">Upload job offer document</div>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" id="fileInput" accept=".pdf,.txt" onchange="onFileSelected()" />
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">Click or drag & drop a file here</div>
+          <div class="upload-subtitle">Supports PDF and .txt files (job offer letters, emails)</div>
+        </div>
+        <div class="file-selected" id="fileSelected">
+          <span>📎</span>
+          <span id="fileName">No file selected</span>
+        </div>
+        <button class="analyze-btn" id="analyzeBtnFile" onclick="analyzeFile()" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Analyze Document
+        </button>
+      </div>
+
+      <!-- Shared loader -->
       <div class="loader" id="loader">
         <div class="spinner"></div>
         Analyzing with AI...
       </div>
 
-      <!-- Result -->
+      <!-- Shared result -->
       <div class="result" id="result">
+
+        <!-- Source banner (file only) -->
+        <div class="source-banner" id="sourceBanner"></div>
 
         <!-- Score -->
         <div class="score-section">
@@ -535,93 +634,171 @@
       </div>
     </div>
 
-    <div class="footer">
-      Built by <span>Mind Flayer Hunters</span> · HackArena 2.0 Bangalore Zonals
-    </div>
-  </div>
-
   <script>
-    async function analyze() {
-      const msg = document.getElementById('msgInput').value.trim();
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (i === 0 && tab === 'text') || (i === 1 && tab === 'file'));
+      });
+      document.getElementById('panel-text').classList.toggle('active', tab === 'text');
+      document.getElementById('panel-file').classList.toggle('active', tab === 'file');
+      document.getElementById('result').classList.remove('active');
+      document.getElementById('loader').classList.remove('active');
+    }
+
+    // ── Character counter ─────────────────────────────────────────────────────
+    const msgInputEl = document.getElementById('msgInput');
+    const charCounterEl = document.getElementById('charCounter');
+
+    msgInputEl.addEventListener('input', () => {
+      const len = msgInputEl.value.length;
+      charCounterEl.textContent = `${len} character${len === 1 ? '' : 's'}`;
+    });
+
+    // ── File selection ────────────────────────────────────────────────────────
+    function onFileSelected() {
+      const file = document.getElementById('fileInput').files[0];
+      const selectedEl = document.getElementById('fileSelected');
+      const btn = document.getElementById('analyzeBtnFile');
+      if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        selectedEl.classList.add('visible');
+        btn.disabled = false;
+      } else {
+        selectedEl.classList.remove('visible');
+        btn.disabled = true;
+      }
+    }
+
+    // Drag & drop
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        document.getElementById('fileInput').files = e.dataTransfer.files;
+        onFileSelected();
+      }
+    });
+
+    // ── Text analysis ─────────────────────────────────────────────────────────
+    async function analyzeText() {
+      const msg = msgInputEl.value.trim();
       if (!msg) return;
 
-      const btn     = document.getElementById('analyzeBtn');
-      const loader  = document.getElementById('loader');
-      const result  = document.getElementById('result');
-
-      btn.disabled = true;
-      loader.classList.add('active');
-      result.classList.remove('active');
-
+      setLoading(true, 'analyzeBtnText');
       try {
         const res = await fetch('http://127.0.0.1:8000/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
         });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.detail || 'Analysis failed.');
+          return;
+        }
         const data = await res.json();
-        renderResult(data);
-        result.classList.add('active');
+        renderResult(data, null);
       } catch (e) {
         alert('Cannot reach backend. Make sure uvicorn is running on port 8000.');
       } finally {
-        btn.disabled = false;
-        loader.classList.remove('active');
+        setLoading(false, 'analyzeBtnText');
       }
     }
 
-    function renderResult(data) {
+    // ── File analysis ─────────────────────────────────────────────────────────
+    async function analyzeFile() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      setLoading(true, 'analyzeBtnFile');
+      try {
+        const res = await fetch('http://127.0.0.1:8000/analyze-file', {
+          method: 'POST',
+          body: formData
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          alert(err.detail || 'File analysis failed.');
+          return;
+        }
+        const data = await res.json();
+        renderResult(data, data.source);
+      } catch (e) {
+        alert('Cannot reach backend. Make sure uvicorn is running on port 8000.');
+      } finally {
+        setLoading(false, 'analyzeBtnFile');
+      }
+    }
+
+    // ── Loading state ─────────────────────────────────────────────────────────
+    function setLoading(on, btnId) {
+      document.getElementById('loader').classList.toggle('active', on);
+      document.getElementById(btnId).disabled = on;
+      if (on) document.getElementById('result').classList.remove('active');
+    }
+
+    // ── Render result ─────────────────────────────────────────────────────────
+    function renderResult(data, source) {
       const score = data.risk_score ?? 0;
 
-      // Determine state
-      let state, pillClass, dotClass, verdictLabel;
-      if (score >= 70) {
-        state = 'danger'; pillClass = 'pill-danger'; dotClass = 'dot-danger';
-      } else if (score >= 40) {
-        state = 'warn'; pillClass = 'pill-warn'; dotClass = 'dot-warn';
-      } else {
-        state = 'safe'; pillClass = 'pill-safe'; dotClass = 'dot-safe';
-      }
+      let state, pillClass, dotClass;
+      if (score >= 70)      { state = 'danger'; pillClass = 'pill-danger'; dotClass = 'dot-danger'; }
+      else if (score >= 40) { state = 'warn';   pillClass = 'pill-warn';   dotClass = 'dot-warn'; }
+      else                  { state = 'safe';   pillClass = 'pill-safe';   dotClass = 'dot-safe'; }
 
       const colorMap = { danger: '#ef4444', warn: '#f59e0b', safe: '#10b981' };
       const color = colorMap[state];
 
-      // Animate ring
+      // Ring
       const ring = document.getElementById('ringFill');
-      const circumference = 251;
-      const offset = circumference - (score / 100) * circumference;
+      const offset = 251 - (score / 100) * 251;
       ring.style.stroke = color;
       setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
 
-      // Animate score number
       animateNumber('scoreNum', score, color);
 
-      // Verdict pill
+      // Verdict
       const pill = document.getElementById('verdictPill');
       pill.className = 'verdict-pill ' + pillClass;
       document.getElementById('verdictDot').className = 'dot ' + dotClass;
       document.getElementById('verdictText').textContent = data.verdict ?? '';
 
-      // Scam pattern
+      // Pattern
       const pat = document.getElementById('scamPattern');
-      pat.innerHTML = data.scam_type
-        ? `Pattern: <strong>${data.scam_type}</strong>`
-        : '';
+      pat.innerHTML = data.scam_type ? `Pattern: <strong>${data.scam_type}</strong>` : '';
 
-      // Red flags
-      const rf = document.getElementById('redFlags');
-      rf.innerHTML = (data.red_flags || []).length
-        ? data.red_flags.map(f => `<span class="tag tag-danger">⚠ ${f}</span>`).join('')
-        : '<span class="empty-state">None detected</span>';
+      // Flags
+      document.getElementById('redFlags').innerHTML =
+        (data.red_flags || []).length
+          ? data.red_flags.map(f => `<span class="tag tag-danger">⚠ ${f}</span>`).join('')
+          : '<span class="empty-state">None detected</span>';
 
-      // Safe signals
-      const ss = document.getElementById('safeSignals');
-      ss.innerHTML = (data.safe_signals || []).length
-        ? data.safe_signals.map(s => `<span class="tag tag-safe">✓ ${s}</span>`).join('')
-        : '<span class="empty-state">None detected</span>';
+      document.getElementById('safeSignals').innerHTML =
+        (data.safe_signals || []).length
+          ? data.safe_signals.map(s => `<span class="tag tag-safe">✓ ${s}</span>`).join('')
+          : '<span class="empty-state">None detected</span>';
 
-      // Advice
       document.getElementById('adviceText').textContent = data.advice ?? '';
+
+      // Source banner
+      const banner = document.getElementById('sourceBanner');
+      if (source) {
+        banner.textContent = '📄 ' + source;
+        banner.classList.add('visible');
+      } else {
+        banner.classList.remove('visible');
+      }
+
+      document.getElementById('result').classList.add('active');
     }
 
     function animateNumber(id, target, color) {

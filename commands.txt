@@ -1,0 +1,15 @@
+cd C:\Users\rithi\scam-detector
+venv\Scripts\activate
+cd backend
+uvicorn main:app --reload
+
+
+future advancements:
+1.> upload the poster of the job offer, then the system analyzes the uploaded image , scans the key words used in the image and then detects and give output of risk analysis.
+2.> scalable to analyze linkedin Job offer posters.
+3.> Other social media DMs Job offer copy pastable message and analyze the risk.
+4.>job offor call recordings uploadable and then analyze the keywords spoken carefully and anlayze the risks.
+
+
+IF JUDGES ASKS:
+WHY NOT USE NORMAL AI TOOLS LIKE CHATGPT, CLAUDE TO ANSWERS AND ANALYZE THE RISK SCORE INSTEAD OF UR PROJECT RISK DETECTOR???

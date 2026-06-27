@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -6,6 +6,7 @@ from groq import Groq
 import os
 import json
 import re
+import io
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -67,7 +68,7 @@ Message: "Hi, we found your resume on Naukri. We have openings for data entry wo
 {"risk_score": 48, "verdict": "Suspicious", "scam_type": "Work From Home Scam", "red_flags": ["No company name provided", "Vague job description", "Unsolicited contact claiming to have your resume"], "safe_signals": ["No payment mentioned", "Salary is realistic"], "advice": "Ask for the company name, official website, and HR email before proceeding — do not share personal documents yet."}
 """
 
-# ── demo fallback cache (used if Groq rate-limits during live demo) ───────────
+# ── demo fallback cache ───────────────────────────────────────────────────────
 DEMO_CACHE = {
     "scam": {
         "risk_score": 94,
@@ -107,37 +108,15 @@ DEMO_CACHE = {
 }
 
 SCAM_KEYWORDS = [
-    "fee",
-    "register",
-    "registration",
-    "pay",
-    "payment",
-    "deposit",
-    "guaranteed",
-    "ghar baithe",
-    "घर बैठे",
-    "premium",
-    "urgent",
-    "limited seats",
-    "apply now",
-    "call now",
-    "whatsapp now",
-    "no interview",
-    "no experience",
-    "earn daily",
-    "part time earn",
+    "fee", "register", "registration", "pay", "payment", "deposit",
+    "guaranteed", "ghar baithe", "घर बैठे", "premium", "urgent",
+    "limited seats", "apply now", "call now", "whatsapp now",
+    "no interview", "no experience", "earn daily", "part time earn",
 ]
 
 SAFE_KEYWORDS = [
-    "interview",
-    "office",
-    "hr@",
-    ".com email",
-    "bring resume",
-    "shortlisted",
-    "scheduled",
-    "department",
-    "joining date",
+    "interview", "office", "hr@", ".com email", "bring resume",
+    "shortlisted", "scheduled", "department", "joining date",
 ]
 
 
@@ -153,25 +132,8 @@ def fallback_response(message: str) -> dict:
         return DEMO_CACHE["suspicious"]
 
 
-# ── validation ───────────────────────────────────────────────────────────────
-MIN_MESSAGE_LENGTH = 10  # characters (after trimming)
-
-
-# ── endpoint ─────────────────────────────────────────────────────────────────
-@app.post("/analyze")
-async def analyze_message(req: MessageRequest):
-    message = (req.message or "").strip()
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Message cannot be empty.",
-        )
-    if len(message) < MIN_MESSAGE_LENGTH:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.",
-        )
-
+# ── core analysis (shared by both endpoints) ─────────────────────────────────
+async def run_analysis(message: str) -> dict:
     user_content = f"""{FEW_SHOT_EXAMPLES}
 
 Now analyze this message:
@@ -180,7 +142,7 @@ Message: "{message}"
 Return exactly this JSON structure:
 {{
   "risk_score": <integer 0-100>,
-  "verdict": "<Safe | Suspicious | Likely Scam>",
+  "verdict": "<Safe | Suspicious | Likely Scam | Definite Scam>",
   "scam_type": "<null or one of: Registration Fee Scam, Guaranteed Job Scam, Work From Home Scam, Data Harvesting Scam, Impersonation Scam, Other>",
   "red_flags": ["<flag1>", "<flag2>"],
   "safe_signals": ["<signal1>"],
@@ -200,15 +162,90 @@ Return exactly this JSON structure:
         text = response.choices[0].message.content.strip()
         text = re.sub(r"```json|```", "", text).strip()
         return json.loads(text)
-
     except Exception as e:
-        # Groq rate limit or network failure — return smart cached fallback
         print(f"[FALLBACK TRIGGERED] Reason: {e}")
         return fallback_response(message)
 
 
-# ── health check (useful for Render deployment) ───────────────────────────────
+# ── validation ───────────────────────────────────────────────────────────────
+MIN_MESSAGE_LENGTH = 10
+
+
+# ── endpoint 1: text message analysis ────────────────────────────────────────
+@app.post("/analyze")
+async def analyze_message(req: MessageRequest):
+    message = (req.message or "").strip()
+    if not message:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Message cannot be empty.",
+        )
+    if len(message) < MIN_MESSAGE_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.",
+        )
+    return await run_analysis(message)
+
+
+# ── endpoint 2: PDF / text file upload ───────────────────────────────────────
+@app.post("/analyze-file")
+async def analyze_file(file: UploadFile = File(...)):
+    allowed_types = ["application/pdf", "text/plain"]
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type. Please upload a PDF or .txt file.",
+        )
+
+    contents = await file.read()
+    extracted_text = ""
+
+    if file.content_type == "application/pdf":
+        try:
+            import pdfplumber
+            with pdfplumber.open(io.BytesIO(contents)) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        extracted_text += page_text + "\n"
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Could not extract text from PDF: {str(e)}",
+            )
+
+    elif file.content_type == "text/plain":
+        try:
+            extracted_text = contents.decode("utf-8")
+        except UnicodeDecodeError:
+            extracted_text = contents.decode("latin-1")
+
+    extracted_text = extracted_text.strip()
+
+    if not extracted_text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No text could be extracted. The file may be empty or image-based.",
+        )
+
+    if len(extracted_text) < MIN_MESSAGE_LENGTH:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Extracted text is too short to analyze.",
+        )
+
+    # Truncate to avoid LLM context limits
+    if len(extracted_text) > 3000:
+        extracted_text = extracted_text[:3000] + "..."
+
+    result = await run_analysis(extracted_text)
+    result["extracted_preview"] = extracted_text[:300] + ("..." if len(extracted_text) > 300 else "")
+    result["source"] = f"Extracted from: {file.filename}"
+    return result
+
+
+# ── health check ─────────────────────────────────────────────────────────────
 @app.get("/")
 async def root():
     return {"status": "ScamShield API is running"}
-
