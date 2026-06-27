@@ -691,7 +691,7 @@
 
       setLoading(true, 'analyzeBtnText');
       try {
-        const res = await fetch('http://127.0.0.1:8000/analyze', {
+        const res = await fetch('https://scamshield-mv9n.onrender.com/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
@@ -721,7 +721,7 @@
 
       setLoading(true, 'analyzeBtnFile');
       try {
-        const res = await fetch('http://127.0.0.1:8000/analyze-file', {
+        const res = await fetch('https://scamshield-mv9n.onrender.com/analyze-file', {
           method: 'POST',
           body: formData
         });
