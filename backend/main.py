@@ -7,10 +7,15 @@ import os
 import json
 import re
 import io
+import httpx
+from datetime import datetime
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # ── app ──────────────────────────────────────────────────────────────────────
 app = FastAPI()
@@ -22,10 +27,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── request model ────────────────────────────────────────────────────────────
+# ── request models ────────────────────────────────────────────────────────────
 class MessageRequest(BaseModel):
     message: str
 
+class ReportRequest(BaseModel):
+    message_preview: str
+    scam_type: str | None
+    risk_score: int
+    verdict: str
+    red_flags: str
 
 # ── prompts ──────────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are a scam detection expert specializing in fake job messages circulated on WhatsApp and Telegram in India.
@@ -74,13 +85,7 @@ DEMO_CACHE = {
         "risk_score": 94,
         "verdict": "Likely Scam",
         "scam_type": "Registration Fee Scam",
-        "red_flags": [
-            "Upfront registration fee demanded",
-            "Unrealistic income promise",
-            "No company name or website",
-            "Urgency pressure tactic",
-            "Personal WhatsApp number only",
-        ],
+        "red_flags": ["Upfront registration fee demanded", "Unrealistic income promise", "No company name or website", "Urgency pressure tactic", "Personal WhatsApp number only"],
         "safe_signals": [],
         "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates.",
     },
@@ -97,27 +102,13 @@ DEMO_CACHE = {
         "verdict": "Safe",
         "scam_type": None,
         "red_flags": [],
-        "safe_signals": [
-            "Official company email domain used",
-            "Specific office location provided",
-            "No payment requested",
-            "Interview process mentioned",
-        ],
+        "safe_signals": ["Official company email domain used", "Specific office location provided", "No payment requested", "Interview process mentioned"],
         "advice": "This message appears legitimate. Verify by calling the company directly using their official website number.",
     },
 }
 
-SCAM_KEYWORDS = [
-    "fee", "register", "registration", "pay", "payment", "deposit",
-    "guaranteed", "ghar baithe", "घर बैठे", "premium", "urgent",
-    "limited seats", "apply now", "call now", "whatsapp now",
-    "no interview", "no experience", "earn daily", "part time earn",
-]
-
-SAFE_KEYWORDS = [
-    "interview", "office", "hr@", ".com email", "bring resume",
-    "shortlisted", "scheduled", "department", "joining date",
-]
+SCAM_KEYWORDS = ["fee", "register", "registration", "pay", "payment", "deposit", "guaranteed", "ghar baithe", "घर बैठे", "premium", "urgent", "limited seats", "apply now", "call now", "whatsapp now", "no interview", "no experience", "earn daily", "part time earn"]
+SAFE_KEYWORDS = ["interview", "office", "hr@", ".com email", "bring resume", "shortlisted", "scheduled", "department", "joining date"]
 
 
 def fallback_response(message: str) -> dict:
@@ -132,7 +123,7 @@ def fallback_response(message: str) -> dict:
         return DEMO_CACHE["suspicious"]
 
 
-# ── core analysis (shared by both endpoints) ─────────────────────────────────
+# ── core analysis ─────────────────────────────────────────────────────────────
 async def run_analysis(message: str) -> dict:
     user_content = f"""{FEW_SHOT_EXAMPLES}
 
@@ -167,36 +158,26 @@ Return exactly this JSON structure:
         return fallback_response(message)
 
 
-# ── validation ───────────────────────────────────────────────────────────────
 MIN_MESSAGE_LENGTH = 10
 
 
-# ── endpoint 1: text message analysis ────────────────────────────────────────
+# ── endpoint 1: text analysis ─────────────────────────────────────────────────
 @app.post("/analyze")
 async def analyze_message(req: MessageRequest):
     message = (req.message or "").strip()
     if not message:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Message cannot be empty.",
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message cannot be empty.")
     if len(message) < MIN_MESSAGE_LENGTH:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.",
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.")
     return await run_analysis(message)
 
 
-# ── endpoint 2: PDF / text file upload ───────────────────────────────────────
+# ── endpoint 2: file upload analysis ─────────────────────────────────────────
 @app.post("/analyze-file")
 async def analyze_file(file: UploadFile = File(...)):
     allowed_types = ["application/pdf", "text/plain"]
     if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unsupported file type. Please upload a PDF or .txt file.",
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type. Please upload a PDF or .txt file.")
 
     contents = await file.read()
     extracted_text = ""
@@ -210,11 +191,7 @@ async def analyze_file(file: UploadFile = File(...)):
                     if page_text:
                         extracted_text += page_text + "\n"
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Could not extract text from PDF: {str(e)}",
-            )
-
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Could not extract text from PDF: {str(e)}")
     elif file.content_type == "text/plain":
         try:
             extracted_text = contents.decode("utf-8")
@@ -222,20 +199,10 @@ async def analyze_file(file: UploadFile = File(...)):
             extracted_text = contents.decode("latin-1")
 
     extracted_text = extracted_text.strip()
-
     if not extracted_text:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="No text could be extracted. The file may be empty or image-based.",
-        )
-
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No text could be extracted. The file may be empty or image-based.")
     if len(extracted_text) < MIN_MESSAGE_LENGTH:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Extracted text is too short to analyze.",
-        )
-
-    # Truncate to avoid LLM context limits
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Extracted text is too short to analyze.")
     if len(extracted_text) > 3000:
         extracted_text = extracted_text[:3000] + "..."
 
@@ -243,6 +210,61 @@ async def analyze_file(file: UploadFile = File(...)):
     result["extracted_preview"] = extracted_text[:300] + ("..." if len(extracted_text) > 300 else "")
     result["source"] = f"Extracted from: {file.filename}"
     return result
+
+
+# ── endpoint 3: report a scam ─────────────────────────────────────────────────
+@app.post("/report-scam")
+async def report_scam(req: ReportRequest):
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise HTTPException(status_code=500, detail="Database not configured.")
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.post(
+                f"{SUPABASE_URL}/rest/v1/scam_reports",
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal"
+                },
+                json={
+                    "message_preview": req.message_preview[:200],
+                    "scam_type": req.scam_type,
+                    "risk_score": req.risk_score,
+                    "verdict": req.verdict,
+                    "red_flags": req.red_flags,
+                }
+            )
+        if response.status_code in [200, 201]:
+            return {"success": True, "message": "Scam reported successfully. Thank you for helping others!"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to save report.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+# ── endpoint 4: get recent scam reports ───────────────────────────────────────
+@app.get("/recent-scams")
+async def get_recent_scams():
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise HTTPException(status_code=500, detail="Database not configured.")
+    try:
+        async with httpx.AsyncClient() as client_http:
+            response = await client_http.get(
+                f"{SUPABASE_URL}/rest/v1/scam_reports",
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                },
+                params={
+                    "select": "id,message_preview,scam_type,risk_score,verdict,red_flags,reported_at",
+                    "order": "reported_at.desc",
+                    "limit": "20"
+                }
+            )
+        return response.json()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 # ── health check ─────────────────────────────────────────────────────────────

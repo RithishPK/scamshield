@@ -21,9 +21,7 @@
       --warn-dim: rgba(245,158,11,0.1);
       --safe-dim: rgba(16,185,129,0.1);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -36,19 +34,15 @@
       position: relative;
       overflow-x: hidden;
     }
-
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-image: linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       z-index: 0;
     }
-
     body::after {
       content: '';
       position: fixed;
@@ -61,450 +55,126 @@
       pointer-events: none;
       z-index: 0;
     }
-
-    .container {
-      width: 100%;
-      max-width: 620px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      animation: fadeDown 0.6s ease both;
-    }
-
-    .shield-icon {
-      width: 56px;
-      height: 56px;
-      margin: 0 auto 16px;
-    }
-
-    .shield-icon svg {
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 0 12px rgba(59,130,246,0.5));
-    }
-
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 2.4rem;
-      font-weight: 800;
-      letter-spacing: -1px;
-      color: var(--text);
-      line-height: 1;
-    }
-
+    .container { width: 100%; max-width: 680px; position: relative; z-index: 1; }
+    .header { text-align: center; margin-bottom: 40px; animation: fadeDown 0.6s ease both; }
+    .shield-icon { width: 56px; height: 56px; margin: 0 auto 16px; }
+    .shield-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 12px rgba(59,130,246,0.5)); }
+    .logo { font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800; letter-spacing: -1px; color: var(--text); line-height: 1; }
     .logo span { color: var(--accent); }
+    .tagline { margin-top: 8px; color: var(--muted); font-size: 0.92rem; font-weight: 500; }
+    .badge-row { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+    .badge { font-size: 0.72rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; border: 1px solid var(--border); color: var(--muted); background: var(--surface); }
 
-    .tagline {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 0.92rem;
-      font-weight: 500;
-    }
+    /* Nav tabs */
+    .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .nav-tab { padding: 8px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .nav-tab:hover { color: var(--text); }
+    .nav-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    .badge-row {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 14px;
-    }
+    /* Pages */
+    .page { display: none; }
+    .page.active { display: block; }
 
-    .badge {
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-      letter-spacing: 0.5px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      background: var(--surface);
-    }
-
-    /* ── Tabs ── */
-    .tab-row {
-      display: flex;
-      gap: 0;
-      margin-bottom: 0;
-      border-radius: 14px 14px 0 0;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-bottom: none;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 12px;
-      background: var(--surface2);
-      border: none;
-      color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      transition: all 0.2s;
-      letter-spacing: 0.2px;
-    }
-
+    /* Input tabs */
+    .tab-row { display: flex; gap: 0; border-radius: 14px 14px 0 0; overflow: hidden; border: 1px solid var(--border); border-bottom: none; }
+    .tab-btn { flex: 1; padding: 12px; background: var(--surface2); border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.2s; }
     .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { background: var(--surface); color: var(--accent); border-bottom: 2px solid var(--accent); }
 
-    .tab-btn.active {
-      background: var(--surface);
-      color: var(--accent);
-      border-bottom: 2px solid var(--accent);
-    }
-
-    /* ── Card ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 0 0 20px 20px;
-      padding: 28px;
-      animation: fadeUp 0.6s ease 0.1s both;
-    }
-
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 0 0 20px 20px; padding: 28px; animation: fadeUp 0.6s ease 0.1s both; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
-    .input-label {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      line-height: 1.6;
-      padding: 14px 16px;
-      resize: vertical;
-      min-height: 140px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
+    .input-label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+    textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; line-height: 1.6; padding: 14px 16px; resize: vertical; min-height: 140px; outline: none; transition: border-color 0.2s; }
     textarea::placeholder { color: var(--muted); }
     textarea:focus { border-color: var(--accent); }
+    .char-counter { margin-top: 8px; text-align: right; color: var(--muted); font-size: 0.78rem; font-weight: 600; }
 
-    .char-counter {
-      margin-top: 8px;
-      text-align: right;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-
-    /* ── File upload zone ── */
-    .upload-zone {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 40px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--accent);
-      background: rgba(59,130,246,0.04);
-    }
-
-    .upload-zone input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
+    .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: all 0.2s; position: relative; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(59,130,246,0.04); }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
     .upload-icon { font-size: 2rem; margin-bottom: 10px; }
-
-    .upload-title {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .upload-subtitle {
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-
-    .file-selected {
-      margin-top: 14px;
-      padding: 10px 14px;
-      background: rgba(59,130,246,0.08);
-      border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 8px;
-      font-size: 0.85rem;
-      color: var(--accent);
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
+    .upload-title { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .upload-subtitle { font-size: 0.82rem; color: var(--muted); }
+    .file-selected { margin-top: 14px; padding: 10px 14px; background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 8px; font-size: 0.85rem; color: var(--accent); display: none; align-items: center; gap: 8px; }
     .file-selected.visible { display: flex; }
 
-    /* ── Buttons ── */
-    .analyze-btn {
-      margin-top: 14px;
-      width: 100%;
-      padding: 15px;
-      background: var(--accent);
-      color: #fff;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
+    .analyze-btn { margin-top: 14px; width: 100%; padding: 15px; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .analyze-btn:hover:not(:disabled) { background: #2563eb; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.3); }
+    .analyze-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; transform: none; box-shadow: none; }
 
-    .analyze-btn:hover:not(:disabled) {
-      background: #2563eb;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(59,130,246,0.3);
-    }
-
-    .analyze-btn:disabled {
-      background: var(--surface2);
-      color: var(--muted);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    /* ── Loader ── */
-    .loader {
-      display: none;
-      text-align: center;
-      padding: 32px 0 8px;
-      color: var(--muted);
-      font-size: 0.9rem;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-    }
-
+    .loader { display: none; text-align: center; padding: 32px 0 8px; color: var(--muted); font-size: 0.9rem; gap: 10px; align-items: center; justify-content: center; }
     .loader.active { display: flex; }
+    .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
 
-    .spinner {
-      width: 18px;
-      height: 18px;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
-
-    /* ── Result ── */
-    .result {
-      margin-top: 20px;
-      display: none;
-      flex-direction: column;
-      gap: 0;
-      animation: fadeUp 0.4s ease both;
-    }
-
+    .result { margin-top: 20px; display: none; flex-direction: column; gap: 0; animation: fadeUp 0.4s ease both; }
     .result.active { display: flex; }
 
-    /* File source banner */
-    .source-banner {
-      background: rgba(59,130,246,0.08);
-      border: 1px solid rgba(59,130,246,0.2);
-      border-radius: 10px;
-      padding: 10px 14px;
-      font-size: 0.82rem;
-      color: var(--accent);
-      margin-bottom: 12px;
-      display: none;
-    }
-
+    .source-banner { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 10px 14px; font-size: 0.82rem; color: var(--accent); margin-bottom: 12px; display: none; }
     .source-banner.visible { display: block; }
 
-    /* Score section */
-    .score-section {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px 24px;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      margin-bottom: 12px;
-    }
-
+    .score-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; display: flex; align-items: center; gap: 28px; margin-bottom: 12px; }
     .score-ring-wrap { flex-shrink: 0; }
-
-    .score-ring {
-      position: relative;
-      width: 100px;
-      height: 100px;
-    }
-
-    .score-ring svg {
-      transform: rotate(-90deg);
-      width: 100%;
-      height: 100%;
-    }
-
+    .score-ring { position: relative; width: 100px; height: 100px; }
+    .score-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
     .score-ring-bg { fill: none; stroke: var(--border); stroke-width: 7; }
-
-    .score-ring-fill {
-      fill: none;
-      stroke-width: 7;
-      stroke-linecap: round;
-      stroke-dasharray: 251;
-      stroke-dashoffset: 251;
-      transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.3s;
-    }
-
-    .score-num {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Syne', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-    }
-
+    .score-ring-fill { fill: none; stroke-width: 7; stroke-linecap: round; stroke-dasharray: 251; stroke-dashoffset: 251; transition: stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.3s; }
+    .score-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; }
     .score-info { flex: 1; }
-
-    .verdict-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      letter-spacing: 0.3px;
-    }
-
+    .verdict-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.3px; }
     .verdict-pill .dot { width: 7px; height: 7px; border-radius: 50%; }
-
-    .score-label {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      font-weight: 600;
-    }
-
+    .score-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
     .scam-pattern { font-size: 0.82rem; color: var(--muted); margin-top: 6px; }
     .scam-pattern strong { color: var(--text); font-weight: 600; }
 
-    .flags-section {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 24px;
-      margin-bottom: 12px;
-    }
-
-    .section-head {
-      font-size: 0.72rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: var(--muted);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .section-head::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
+    .flags-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; }
+    .section-head { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .section-head::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
-
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 500; line-height: 1.3; }
     .tag-danger { background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
-    .tag-safe   { background: var(--safe-dim);   color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
-
+    .tag-safe { background: var(--safe-dim); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.2); }
     .empty-state { color: var(--muted); font-size: 0.88rem; font-style: italic; }
 
-    .advice-section {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px 24px;
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-    }
-
+    .advice-section { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 18px 24px; display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
     .advice-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
     .advice-text { font-size: 0.9rem; color: #a0aec0; line-height: 1.6; }
 
+    /* Report button */
+    .report-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--danger); color: #fca5a5; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: none; align-items: center; justify-content: center; gap: 7px; }
+    .report-btn:hover { background: var(--danger-dim); }
+    .report-btn.visible { display: flex; }
+    .report-btn.reported { border-color: var(--safe); color: #6ee7b7; pointer-events: none; }
+
+    /* Recent scams page */
+    .scams-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .scams-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--text); }
+    .scams-subtitle { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+    .refresh-btn { padding: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .scam-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; animation: fadeUp 0.3s ease both; }
+    .scam-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .scam-score-badge { font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+    .scam-type-label { font-size: 0.8rem; color: var(--muted); }
+    .scam-preview { font-size: 0.88rem; color: #a0aec0; line-height: 1.5; margin-bottom: 10px; font-style: italic; }
+    .scam-flags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .scam-flag-tag { font-size: 0.75rem; padding: 3px 8px; border-radius: 6px; background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.15); }
+    .scam-time { font-size: 0.75rem; color: var(--muted); }
+
+    .loading-scams { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; }
+    .no-scams { text-align: center; padding: 40px; color: var(--muted); font-size: 0.9rem; }
+
     .pill-danger { background: var(--danger-dim); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
-    .pill-warn   { background: var(--warn-dim);   color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
-    .pill-safe   { background: var(--safe-dim);   color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
-
+    .pill-warn { background: var(--warn-dim); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+    .pill-safe { background: var(--safe-dim); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
     .dot-danger { background: var(--danger); }
-    .dot-warn   { background: var(--warn); }
-    .dot-safe   { background: var(--safe); }
+    .dot-warn { background: var(--warn); }
+    .dot-safe { background: var(--safe); }
 
-    .footer {
-      margin-top: 40px;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.78rem;
-      z-index: 1;
-      position: relative;
-    }
-
-    .footer span { color: var(--accent); }
-
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
@@ -515,10 +185,8 @@
     <div class="header">
       <div class="shield-icon">
         <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M28 4L8 13v14c0 12.5 8.5 24.2 20 27 11.5-2.8 20-14.5 20-27V13L28 4z"
-                fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M20 28l6 6 10-12" stroke="#3b82f6" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M28 4L8 13v14c0 12.5 8.5 24.2 20 27 11.5-2.8 20-14.5 20-27V13L28 4z" fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M20 28l6 6 10-12" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
       <div class="logo">Scam<span>Shield</span></div>
@@ -530,111 +198,140 @@
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tab-row">
-      <button class="tab-btn active" onclick="switchTab('text')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Paste Message
-      </button>
-      <button class="tab-btn" onclick="switchTab('file')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Upload PDF / File
-      </button>
+    <!-- Nav -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('analyze')">🔍 Analyze</button>
+      <button class="nav-tab" onclick="showPage('recent'); loadRecentScams()">⚠️ Recent Scams</button>
     </div>
 
-    <!-- Card -->
-    <div class="card">
-
-      <!-- Tab: Text -->
-      <div class="tab-panel active" id="panel-text">
-        <div class="input-label">Paste job message</div>
-        <textarea id="msgInput"
-          placeholder="e.g. 'Work from home, earn Rs 50,000/month guaranteed. Pay Rs 500 registration fee. Call now: 9876543210'"></textarea>
-        <div class="char-counter" id="charCounter">0 characters</div>
-        <button class="analyze-btn" id="analyzeBtnText" onclick="analyzeText()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          Analyze Message
+    <!-- Page: Analyze -->
+    <div class="page active" id="page-analyze">
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('text')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Paste Message
+        </button>
+        <button class="tab-btn" onclick="switchTab('file')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Upload PDF / File
         </button>
       </div>
 
-      <!-- Tab: File -->
-      <div class="tab-panel" id="panel-file">
-        <div class="input-label">Upload job offer document</div>
-        <div class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept=".pdf,.txt" onchange="onFileSelected()" />
-          <div class="upload-icon">📄</div>
-          <div class="upload-title">Click or drag & drop a file here</div>
-          <div class="upload-subtitle">Supports PDF and .txt files (job offer letters, emails)</div>
+      <div class="card">
+        <!-- Text tab -->
+        <div class="tab-panel active" id="panel-text">
+          <div class="input-label">Paste job message</div>
+          <textarea id="msgInput" placeholder="e.g. 'Work from home, earn Rs 50,000/month guaranteed. Pay Rs 500 registration fee. Call now: 9876543210'"></textarea>
+          <div class="char-counter" id="charCounter">0 characters</div>
+          <button class="analyze-btn" id="analyzeBtnText" onclick="analyzeText()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Analyze Message
+          </button>
         </div>
-        <div class="file-selected" id="fileSelected">
-          <span>📎</span>
-          <span id="fileName">No file selected</span>
+
+        <!-- File tab -->
+        <div class="tab-panel" id="panel-file">
+          <div class="input-label">Upload job offer document</div>
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept=".pdf,.txt" onchange="onFileSelected()" />
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Click or drag & drop a file here</div>
+            <div class="upload-subtitle">Supports PDF and .txt files (job offer letters, emails)</div>
+          </div>
+          <div class="file-selected" id="fileSelected">
+            <span>📎</span>
+            <span id="fileName">No file selected</span>
+          </div>
+          <button class="analyze-btn" id="analyzeBtnFile" onclick="analyzeFile()" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Analyze Document
+          </button>
         </div>
-        <button class="analyze-btn" id="analyzeBtnFile" onclick="analyzeFile()" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-          </svg>
-          Analyze Document
-        </button>
-      </div>
 
-      <!-- Shared loader -->
-      <div class="loader" id="loader">
-        <div class="spinner"></div>
-        Analyzing with AI...
-      </div>
+        <!-- Loader -->
+        <div class="loader" id="loader">
+          <div class="spinner"></div>
+          Analyzing with AI...
+        </div>
 
-      <!-- Shared result -->
-      <div class="result" id="result">
+        <!-- Result -->
+        <div class="result" id="result">
+          <div class="source-banner" id="sourceBanner"></div>
 
-        <!-- Source banner (file only) -->
-        <div class="source-banner" id="sourceBanner"></div>
-
-        <!-- Score -->
-        <div class="score-section">
-          <div class="score-ring-wrap">
-            <div class="score-ring">
-              <svg viewBox="0 0 100 100">
-                <circle class="score-ring-bg" cx="50" cy="50" r="40"/>
-                <circle class="score-ring-fill" id="ringFill" cx="50" cy="50" r="40"/>
-              </svg>
-              <div class="score-num" id="scoreNum">0</div>
+          <div class="score-section">
+            <div class="score-ring-wrap">
+              <div class="score-ring">
+                <svg viewBox="0 0 100 100">
+                  <circle class="score-ring-bg" cx="50" cy="50" r="40"/>
+                  <circle class="score-ring-fill" id="ringFill" cx="50" cy="50" r="40"/>
+                </svg>
+                <div class="score-num" id="scoreNum">0</div>
+              </div>
+            </div>
+            <div class="score-info">
+              <div class="score-label">Risk Score</div>
+              <div class="verdict-pill" id="verdictPill">
+                <span class="dot" id="verdictDot"></span>
+                <span id="verdictText"></span>
+              </div>
+              <div class="scam-pattern" id="scamPattern"></div>
             </div>
           </div>
-          <div class="score-info">
-            <div class="score-label">Risk Score</div>
-            <div class="verdict-pill" id="verdictPill">
-              <span class="dot" id="verdictDot"></span>
-              <span id="verdictText"></span>
-            </div>
-            <div class="scam-pattern" id="scamPattern"></div>
+
+          <div class="flags-section">
+            <div class="section-head">Red Flags</div>
+            <div class="tags-wrap" id="redFlags"></div>
           </div>
-        </div>
 
-        <!-- Red flags -->
-        <div class="flags-section">
-          <div class="section-head">Red Flags</div>
-          <div class="tags-wrap" id="redFlags"></div>
-        </div>
+          <div class="flags-section">
+            <div class="section-head">Safe Signals</div>
+            <div class="tags-wrap" id="safeSignals"></div>
+          </div>
 
-        <!-- Safe signals -->
-        <div class="flags-section">
-          <div class="section-head">Safe Signals</div>
-          <div class="tags-wrap" id="safeSignals"></div>
-        </div>
+          <div class="advice-section">
+            <div class="advice-icon">💡</div>
+            <div class="advice-text" id="adviceText"></div>
+          </div>
 
-        <!-- Advice -->
-        <div class="advice-section">
-          <div class="advice-icon">💡</div>
-          <div class="advice-text" id="adviceText"></div>
+          <!-- Report button (shown only for high risk) -->
+          <button class="report-btn" id="reportBtn" onclick="reportScam()">
+            🚨 Report this scam to warn others
+          </button>
         </div>
-
       </div>
     </div>
+
+    <!-- Page: Recent Scams -->
+    <div class="page" id="page-recent">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px;">
+        <div class="scams-header">
+          <div>
+            <div class="scams-title">⚠️ Recent Scams</div>
+            <div class="scams-subtitle">Community-reported job scams — help others stay safe</div>
+          </div>
+          <button class="refresh-btn" onclick="loadRecentScams()">↻ Refresh</button>
+        </div>
+        <div id="scamsList">
+          <div class="loading-scams">Loading recent scams...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <script>
+    const API = 'https://scamshield-mv9n.onrender.com';
+    let currentResult = null;
+    let currentMessage = '';
+
+    // ── Page navigation ───────────────────────────────────────────────────────
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+      event.target.classList.add('active');
+    }
+
     // ── Tab switching ─────────────────────────────────────────────────────────
     function switchTab(tab) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => {
@@ -646,31 +343,23 @@
       document.getElementById('loader').classList.remove('active');
     }
 
-    // ── Character counter ─────────────────────────────────────────────────────
+    // ── Char counter ──────────────────────────────────────────────────────────
     const msgInputEl = document.getElementById('msgInput');
-    const charCounterEl = document.getElementById('charCounter');
-
     msgInputEl.addEventListener('input', () => {
       const len = msgInputEl.value.length;
-      charCounterEl.textContent = `${len} character${len === 1 ? '' : 's'}`;
+      document.getElementById('charCounter').textContent = `${len} character${len === 1 ? '' : 's'}`;
     });
 
     // ── File selection ────────────────────────────────────────────────────────
     function onFileSelected() {
       const file = document.getElementById('fileInput').files[0];
-      const selectedEl = document.getElementById('fileSelected');
-      const btn = document.getElementById('analyzeBtnFile');
       if (file) {
         document.getElementById('fileName').textContent = file.name;
-        selectedEl.classList.add('visible');
-        btn.disabled = false;
-      } else {
-        selectedEl.classList.remove('visible');
-        btn.disabled = true;
+        document.getElementById('fileSelected').classList.add('visible');
+        document.getElementById('analyzeBtnFile').disabled = false;
       }
     }
 
-    // Drag & drop
     const zone = document.getElementById('uploadZone');
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
@@ -678,33 +367,26 @@
       e.preventDefault();
       zone.classList.remove('dragover');
       const file = e.dataTransfer.files[0];
-      if (file) {
-        document.getElementById('fileInput').files = e.dataTransfer.files;
-        onFileSelected();
-      }
+      if (file) { document.getElementById('fileInput').files = e.dataTransfer.files; onFileSelected(); }
     });
 
     // ── Text analysis ─────────────────────────────────────────────────────────
     async function analyzeText() {
       const msg = msgInputEl.value.trim();
       if (!msg) return;
-
+      currentMessage = msg;
       setLoading(true, 'analyzeBtnText');
       try {
-        const res = await fetch('https://scamshield-mv9n.onrender.com/analyze', {
+        const res = await fetch(`${API}/analyze`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
         });
-        if (!res.ok) {
-          const err = await res.json();
-          alert(err.detail || 'Analysis failed.');
-          return;
-        }
+        if (!res.ok) { const err = await res.json(); alert(err.detail || 'Analysis failed.'); return; }
         const data = await res.json();
         renderResult(data, null);
       } catch (e) {
-        alert('Cannot reach backend. Make sure uvicorn is running on port 8000.');
+        alert('Cannot reach backend. Try again in 30 seconds — the server may be waking up.');
       } finally {
         setLoading(false, 'analyzeBtnText');
       }
@@ -712,34 +394,25 @@
 
     // ── File analysis ─────────────────────────────────────────────────────────
     async function analyzeFile() {
-      const fileInput = document.getElementById('fileInput');
-      const file = fileInput.files[0];
+      const file = document.getElementById('fileInput').files[0];
       if (!file) return;
-
       const formData = new FormData();
       formData.append('file', file);
-
       setLoading(true, 'analyzeBtnFile');
       try {
-        const res = await fetch('https://scamshield-mv9n.onrender.com/analyze-file', {
-          method: 'POST',
-          body: formData
-        });
-        if (!res.ok) {
-          const err = await res.json();
-          alert(err.detail || 'File analysis failed.');
-          return;
-        }
+        const res = await fetch(`${API}/analyze-file`, { method: 'POST', body: formData });
+        if (!res.ok) { const err = await res.json(); alert(err.detail || 'File analysis failed.'); return; }
         const data = await res.json();
+        currentMessage = data.extracted_preview || '';
         renderResult(data, data.source);
       } catch (e) {
-        alert('Cannot reach backend. Make sure uvicorn is running on port 8000.');
+        alert('Cannot reach backend. Try again in 30 seconds.');
       } finally {
         setLoading(false, 'analyzeBtnFile');
       }
     }
 
-    // ── Loading state ─────────────────────────────────────────────────────────
+    // ── Loading ───────────────────────────────────────────────────────────────
     function setLoading(on, btnId) {
       document.getElementById('loader').classList.toggle('active', on);
       document.getElementById(btnId).disabled = on;
@@ -748,6 +421,7 @@
 
     // ── Render result ─────────────────────────────────────────────────────────
     function renderResult(data, source) {
+      currentResult = data;
       const score = data.risk_score ?? 0;
 
       let state, pillClass, dotClass;
@@ -758,25 +432,19 @@
       const colorMap = { danger: '#ef4444', warn: '#f59e0b', safe: '#10b981' };
       const color = colorMap[state];
 
-      // Ring
       const ring = document.getElementById('ringFill');
-      const offset = 251 - (score / 100) * 251;
       ring.style.stroke = color;
-      setTimeout(() => { ring.style.strokeDashoffset = offset; }, 50);
+      setTimeout(() => { ring.style.strokeDashoffset = 251 - (score / 100) * 251; }, 50);
 
       animateNumber('scoreNum', score, color);
 
-      // Verdict
       const pill = document.getElementById('verdictPill');
       pill.className = 'verdict-pill ' + pillClass;
       document.getElementById('verdictDot').className = 'dot ' + dotClass;
       document.getElementById('verdictText').textContent = data.verdict ?? '';
 
-      // Pattern
-      const pat = document.getElementById('scamPattern');
-      pat.innerHTML = data.scam_type ? `Pattern: <strong>${data.scam_type}</strong>` : '';
+      document.getElementById('scamPattern').innerHTML = data.scam_type ? `Pattern: <strong>${data.scam_type}</strong>` : '';
 
-      // Flags
       document.getElementById('redFlags').innerHTML =
         (data.red_flags || []).length
           ? data.red_flags.map(f => `<span class="tag tag-danger">⚠ ${f}</span>`).join('')
@@ -789,16 +457,103 @@
 
       document.getElementById('adviceText').textContent = data.advice ?? '';
 
-      // Source banner
       const banner = document.getElementById('sourceBanner');
-      if (source) {
-        banner.textContent = '📄 ' + source;
-        banner.classList.add('visible');
-      } else {
-        banner.classList.remove('visible');
+      if (source) { banner.textContent = '📄 ' + source; banner.classList.add('visible'); }
+      else { banner.classList.remove('visible'); }
+
+      // Show report button only for high risk
+      const reportBtn = document.getElementById('reportBtn');
+      reportBtn.className = 'report-btn';
+      if (score >= 70) {
+        reportBtn.classList.add('visible');
+        reportBtn.textContent = '🚨 Report this scam to warn others';
       }
 
       document.getElementById('result').classList.add('active');
+    }
+
+    // ── Report scam ───────────────────────────────────────────────────────────
+    async function reportScam() {
+      if (!currentResult) return;
+      const btn = document.getElementById('reportBtn');
+      btn.disabled = true;
+      btn.textContent = 'Reporting...';
+
+      try {
+        const res = await fetch(`${API}/report-scam`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message_preview: currentMessage.substring(0, 200),
+            scam_type: currentResult.scam_type || 'Other',
+            risk_score: currentResult.risk_score,
+            verdict: currentResult.verdict,
+            red_flags: (currentResult.red_flags || []).join(', ')
+          })
+        });
+        if (res.ok) {
+          btn.textContent = '✅ Reported — thank you for helping others!';
+          btn.classList.add('reported');
+        } else {
+          btn.textContent = '🚨 Report this scam to warn others';
+          btn.disabled = false;
+          alert('Failed to report. Try again.');
+        }
+      } catch (e) {
+        btn.textContent = '🚨 Report this scam to warn others';
+        btn.disabled = false;
+        alert('Cannot reach backend.');
+      }
+    }
+
+    // ── Recent scams ──────────────────────────────────────────────────────────
+    async function loadRecentScams() {
+      const list = document.getElementById('scamsList');
+      list.innerHTML = '<div class="loading-scams"><div class="spinner" style="margin: 0 auto 10px; width:24px; height:24px; border-width:3px;"></div>Loading recent scams...</div>';
+
+      try {
+        const res = await fetch(`${API}/recent-scams`);
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+          list.innerHTML = '<div class="no-scams">No scams reported yet. Be the first to report one!</div>';
+          return;
+        }
+
+        list.innerHTML = data.map(s => {
+          const score = s.risk_score;
+          const scoreColor = score >= 70 ? '#ef4444' : score >= 40 ? '#f59e0b' : '#10b981';
+          const scoreBg = score >= 70 ? 'rgba(239,68,68,0.1)' : score >= 40 ? 'rgba(245,158,11,0.1)' : 'rgba(16,185,129,0.1)';
+          const flags = s.red_flags ? s.red_flags.split(', ').filter(Boolean) : [];
+          const timeAgo = formatTime(s.reported_at);
+
+          return `
+            <div class="scam-card">
+              <div class="scam-card-header">
+                <span class="scam-score-badge" style="background:${scoreBg}; color:${scoreColor}; border: 1px solid ${scoreColor}44;">
+                  Score: ${score} · ${s.verdict}
+                </span>
+                <span class="scam-time">${timeAgo}</span>
+              </div>
+              <div class="scam-type-label">${s.scam_type || 'Unknown pattern'}</div>
+              <div class="scam-preview">"${s.message_preview || 'No preview available'}"</div>
+              ${flags.length ? `<div class="scam-flags">${flags.map(f => `<span class="scam-flag-tag">⚠ ${f}</span>`).join('')}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+      } catch (e) {
+        list.innerHTML = '<div class="no-scams">Could not load scams. Server may be waking up — try refreshing in 30 seconds.</div>';
+      }
+    }
+
+    function formatTime(timestamp) {
+      if (!timestamp) return '';
+      const diff = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
     }
 
     function animateNumber(id, target, color) {
