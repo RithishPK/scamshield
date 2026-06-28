@@ -35,6 +35,9 @@ Paste any suspicious job message and get back an instant AI-powered risk assessm
 
 > 💡 **Smart Fallback:** If Groq rate-limits during a live demo, a keyword-based cache returns the correct response automatically — zero downtime.
 
+- Upload **PDF job offer letters** for instant analysis
+- **Report scams** to a community database — warns other users
+- Browse **Recent Scams** feed — crowd-sourced scam intelligence
 ---
 
 ## 🗂️ Project Structure
@@ -175,8 +178,12 @@ python evaluate.py
 | Frontend | HTML, CSS, JavaScript |
 | AI IDE | trae.ai SOLO |
 | Evaluation | Custom responsible AI evaluation script |
+| Database | Supabase (PostgreSQL) |
 
 ---
+
+## 🌐 Live Demo
+**[https://thescamshield.netlify.app](https://thescamshield.netlify.app)**
 
 ## 📄 License
 
