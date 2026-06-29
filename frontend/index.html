@@ -259,12 +259,70 @@
     ::-webkit-scrollbar{width:5px;}
     ::-webkit-scrollbar-track{background:transparent;}
     ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px;}
+
+    /* ── Mobile hamburger ── */
+    .hamburger{
+      display:none;position:fixed;top:12px;left:12px;z-index:200;
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:8px;padding:8px 10px;cursor:pointer;font-size:1.1rem;
+      color:var(--text);
+    }
+    .sidebar-overlay{
+      display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);
+      z-index:99;backdrop-filter:blur(2px);
+    }
+    .sidebar-overlay.show{display:block;}
+
+    /* ── Mobile bottom nav ── */
+    .bottom-nav{
+      display:none;position:fixed;bottom:0;left:0;right:0;
+      background:var(--sidebar);border-top:1px solid var(--border);
+      padding:8px 0 12px;z-index:100;
+    }
+    .bottom-nav-inner{display:flex;justify-content:space-around;align-items:center;}
+    .bnav-item{
+      display:flex;flex-direction:column;align-items:center;gap:3px;
+      background:none;border:none;color:var(--muted2);cursor:pointer;
+      font-family:'Space Grotesk',sans-serif;font-size:0.62rem;font-weight:600;
+      padding:4px 8px;border-radius:8px;transition:all 0.15s;min-width:56px;
+    }
+    .bnav-item.active{color:var(--accent);}
+    .bnav-item .bnav-icon{font-size:1.2rem;}
+
+    /* ── Mobile responsive ── */
+    @media(max-width:768px){
+      body{height:100dvh;overflow:hidden;}
+      .hamburger{display:none;} /* using bottom nav instead */
+      .sidebar{
+        position:fixed;left:-240px;top:0;height:100%;z-index:100;
+        transition:left 0.25s ease;width:220px;
+      }
+      .sidebar.open{left:0;}
+      .sidebar-overlay.show{display:block;}
+      .main{flex-direction:column;}
+      .right-panel{display:none;}
+      .content{padding:16px 14px 80px;} /* bottom padding for bottom nav */
+      .bottom-nav{display:block;}
+      .stats-grid{grid-template-columns:1fr 1fr;}
+      .stat-card:last-child{grid-column:span 2;}
+      .result-header{flex-direction:column;align-items:flex-start;gap:14px;}
+      .mini-stats{grid-template-columns:1fr 1fr;}
+      .page-title{font-size:1.2rem;}
+      .module-card{padding:16px;}
+    }
+    @media(max-width:400px){
+      .stats-grid{grid-template-columns:1fr;}
+      .stat-card:last-child{grid-column:span 1;}
+    }
   </style>
 </head>
 <body>
 
+<!-- ── Sidebar overlay (mobile) ── -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
 <!-- ── Sidebar ── -->
-<aside class="sidebar">
+<aside class="sidebar" id="sidebar">
   <div class="brand">
     <div class="brand-icon">🛡</div>
     <div class="brand-name">Scam<span>Shield</span></div>
@@ -521,13 +579,44 @@
     <div id="liveFeed"><div class="feed-loading">Loading feed...</div></div>
 
   </div>
-</div>
+</div><!-- end .main -->
+
+<!-- ── Mobile bottom nav ── -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" id="bnav-dashboard" onclick="showPage('dashboard',null);setBottomNav('dashboard')">
+      <span class="bnav-icon">📊</span>Dashboard
+    </button>
+    <button class="bnav-item" id="bnav-analyze" onclick="showPage('analyze',null);setBottomNav('analyze')">
+      <span class="bnav-icon">🔍</span>Analyze
+    </button>
+    <button class="bnav-item" id="bnav-riskdb" onclick="showPage('riskdb',null);loadRecentScams();setBottomNav('riskdb')">
+      <span class="bnav-icon">⚠️</span>Scams
+    </button>
+    <button class="bnav-item" id="bnav-kb" onclick="showPage('kb',null);setBottomNav('kb')">
+      <span class="bnav-icon">📖</span>Learn
+    </button>
+  </div>
+</nav>
 
 <script>
 const API = 'https://scamshield-mv9n.onrender.com';
 let currentResult = null;
 let currentMessage = '';
 let scanHistory = JSON.parse(localStorage.getItem('ss_history') || '[]');
+
+// ── Mobile sidebar ────────────────────────────────────────────────────────────
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('show');
+}
+
+// ── Bottom nav ────────────────────────────────────────────────────────────────
+function setBottomNav(id) {
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('bnav-' + id);
+  if (btn) btn.classList.add('active');
+}
 
 // ── Navigation ────────────────────────────────────────────────────────────────
 function showPage(id, btn) {
