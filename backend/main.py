@@ -280,3 +280,4 @@ async def get_recent_scams(request: Request):
 @app.get("/")
 async def root():
     return {"status": "ScamShield API is running"}
+# ----json---
