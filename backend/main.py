@@ -1,14 +1,16 @@
-from fastapi import FastAPI, HTTPException, status, UploadFile, File
+from fastapi import FastAPI, HTTPException, status, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from groq import Groq
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import os
 import json
 import re
 import io
 import httpx
-from datetime import datetime
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -17,8 +19,11 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# ── app ──────────────────────────────────────────────────────────────────────
+# ── app + rate limiter ───────────────────────────────────────────────────────
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -163,7 +168,8 @@ MIN_MESSAGE_LENGTH = 10
 
 # ── endpoint 1: text analysis ─────────────────────────────────────────────────
 @app.post("/analyze")
-async def analyze_message(req: MessageRequest):
+@limiter.limit("10/minute")
+async def analyze_message(request: Request, req: MessageRequest):
     message = (req.message or "").strip()
     if not message:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Message cannot be empty.")
@@ -174,7 +180,8 @@ async def analyze_message(req: MessageRequest):
 
 # ── endpoint 2: file upload analysis ─────────────────────────────────────────
 @app.post("/analyze-file")
-async def analyze_file(file: UploadFile = File(...)):
+@limiter.limit("5/minute")
+async def analyze_file(request: Request, file: UploadFile = File(...)):
     allowed_types = ["application/pdf", "text/plain"]
     if file.content_type not in allowed_types:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type. Please upload a PDF or .txt file.")
@@ -214,7 +221,8 @@ async def analyze_file(file: UploadFile = File(...)):
 
 # ── endpoint 3: report a scam ─────────────────────────────────────────────────
 @app.post("/report-scam")
-async def report_scam(req: ReportRequest):
+@limiter.limit("3/minute")
+async def report_scam(request: Request, req: ReportRequest):
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise HTTPException(status_code=500, detail="Database not configured.")
     try:
@@ -245,7 +253,8 @@ async def report_scam(req: ReportRequest):
 
 # ── endpoint 4: get recent scam reports ───────────────────────────────────────
 @app.get("/recent-scams")
-async def get_recent_scams():
+@limiter.limit("30/minute")
+async def get_recent_scams(request: Request):
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise HTTPException(status_code=500, detail="Database not configured.")
     try:
