@@ -7,126 +7,45 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
   <style>
     :root{
-      --bg:#060a0f;
-      --panel:#0a0f18;
-      --panel2:#0d1420;
-      --border:#1a2a1a;
-      --border2:#0f2a0f;
-      --text:#c8e6c8;
-      --muted:#4a7a4a;
-      --muted2:#6a9a6a;
-      --accent:#00ff41;
-      --accent2:#00cc33;
-      --accent-dim:rgba(0,255,65,0.08);
-      --accent-dim2:rgba(0,255,65,0.15);
-      --danger:#ff3030;
-      --danger-dim:rgba(255,48,48,0.1);
-      --warn:#ffaa00;
-      --warn-dim:rgba(255,170,0,0.1);
-      --safe:#00ff41;
-      --safe-dim:rgba(0,255,65,0.1);
-      --red:#ff4444;
+      --bg:#060a0f;--panel:#0a0f18;--panel2:#0d1420;--border:#1a2a1a;--border2:#0f2a0f;
+      --text:#c8e6c8;--muted:#4a7a4a;--muted2:#6a9a6a;--accent:#00ff41;--accent2:#00cc33;
+      --accent-dim:rgba(0,255,65,0.08);--accent-dim2:rgba(0,255,65,0.15);
+      --danger:#ff3030;--danger-dim:rgba(255,48,48,0.1);
+      --warn:#ffaa00;--warn-dim:rgba(255,170,0,0.1);
+      --safe:#00ff41;--safe-dim:rgba(0,255,65,0.1);
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     html,body{height:100%;background:var(--bg);}
-    body{
-      font-family:'Share Tech Mono',monospace;
-      color:var(--text);
-      display:flex;
-      flex-direction:column;
-      min-height:100vh;
-      position:relative;
-    }
-
-    /* scanline overlay */
-    body::before{
-      content:'';position:fixed;inset:0;
-      background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
-      pointer-events:none;z-index:1000;
-    }
+    body{font-family:'Share Tech Mono',monospace;color:var(--text);display:flex;flex-direction:column;min-height:100vh;position:relative;}
+    body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:1000;}
 
     /* ── Top bar ── */
-    .topbar{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:10px 20px;
-      background:var(--panel);
-      border-bottom:1px solid var(--border);
-      position:sticky;top:0;z-index:50;
-      flex-shrink:0;
-    }
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--panel);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;flex-shrink:0;}
     .brand{display:flex;align-items:center;gap:10px;}
-    .brand-logo{
-      width:32px;height:32px;background:var(--accent-dim2);border:1px solid var(--accent);
-      border-radius:4px;display:flex;align-items:center;justify-content:center;
-      font-size:1rem;box-shadow:0 0 12px rgba(0,255,65,0.3);
-    }
-    .brand-name{
-      font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;
-      color:var(--accent);letter-spacing:2px;
-      text-shadow:0 0 10px rgba(0,255,65,0.5);
-    }
+    .brand-logo{width:32px;height:32px;background:var(--accent-dim2);border:1px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 0 12px rgba(0,255,65,0.3);}
+    .brand-name{font-family:'Orbitron',monospace;font-size:0.85rem;font-weight:700;color:var(--accent);letter-spacing:2px;text-shadow:0 0 10px rgba(0,255,65,0.5);}
     .brand-name span{color:var(--text);font-size:0.65rem;letter-spacing:1px;display:block;margin-top:1px;}
     .topbar-right{display:flex;align-items:center;gap:12px;}
-    .secure-badge{
-      font-size:0.65rem;color:var(--accent);border:1px solid var(--accent);
-      padding:3px 8px;border-radius:3px;letter-spacing:1px;
-      background:var(--accent-dim);
-    }
-    .topbar-icons{display:flex;gap:8px;}
-    .topbar-icon{
-      width:28px;height:28px;background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;display:flex;align-items:center;justify-content:center;
-      font-size:0.85rem;cursor:pointer;
-    }
+    .secure-badge{font-size:0.65rem;color:var(--accent);border:1px solid var(--accent);padding:3px 8px;border-radius:3px;letter-spacing:1px;background:var(--accent-dim);}
+    .topbar-icon{width:28px;height:28px;background:var(--panel2);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;cursor:pointer;}
 
     /* ── Layout ── */
     .layout{display:flex;flex:1;min-height:0;}
 
     /* ── Sidebar ── */
-    .sidebar{
-      width:180px;min-width:180px;
-      background:var(--panel);
-      border-right:1px solid var(--border);
-      display:flex;flex-direction:column;
-      padding:20px 0;
-      position:sticky;top:53px;height:calc(100vh - 53px);
-      overflow-y:auto;
-    }
-    .nav-label{
-      font-size:0.58rem;color:var(--muted);letter-spacing:2px;
-      padding:10px 16px 4px;text-transform:uppercase;
-    }
-    .nav-item{
-      display:flex;align-items:center;gap:8px;
-      padding:8px 16px;font-size:0.72rem;color:var(--muted2);
-      cursor:pointer;transition:all 0.15s;border:none;background:none;
-      width:100%;text-align:left;letter-spacing:0.5px;
-      border-left:2px solid transparent;
-      font-family:'Share Tech Mono',monospace;
-    }
+    .sidebar{width:180px;min-width:180px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;}
+    .nav-label{font-size:0.58rem;color:var(--muted);letter-spacing:2px;padding:10px 16px 4px;text-transform:uppercase;}
+    .nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;font-size:0.72rem;color:var(--muted2);cursor:pointer;transition:all 0.15s;border:none;background:none;width:100%;text-align:left;letter-spacing:0.5px;border-left:2px solid transparent;font-family:'Share Tech Mono',monospace;}
     .nav-item:hover{color:var(--accent);background:var(--accent-dim);}
-    .nav-item.active{
-      color:var(--accent);background:var(--accent-dim);
-      border-left:2px solid var(--accent);
-      text-shadow:0 0 8px rgba(0,255,65,0.4);
-    }
+    .nav-item.active{color:var(--accent);background:var(--accent-dim);border-left:2px solid var(--accent);text-shadow:0 0 8px rgba(0,255,65,0.4);}
     .nav-icon{font-size:0.9rem;width:16px;}
-    .sidebar-footer{
-      margin-top:auto;padding:16px;border-top:1px solid var(--border);
-      font-size:0.6rem;color:var(--muted);line-height:1.8;
-    }
+    .sidebar-footer{margin-top:auto;padding:16px;border-top:1px solid var(--border);font-size:0.6rem;color:var(--muted);line-height:1.8;}
 
     /* ── Content ── */
-    .content{flex:1;overflow-y:auto;padding:24px;}
+    .content{flex:1;overflow-y:auto;padding:24px;padding-bottom:80px;}
 
     /* ── Right panel ── */
-    .right-panel{
-      width:260px;min-width:260px;
-      border-left:1px solid var(--border);
-      background:var(--panel);
-      position:sticky;top:53px;height:calc(100vh - 53px);
-      overflow-y:auto;padding:20px 16px;
-    }
+    .right-panel{width:260px;min-width:260px;border-left:1px solid var(--border);background:var(--panel);position:sticky;top:53px;height:calc(100vh - 53px);overflow-y:auto;padding:20px 16px;}
 
     /* ── Pages ── */
     .page{display:none;}
@@ -135,106 +54,38 @@
     /* ── Page header ── */
     .page-header{margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;}
     .page-eyebrow{font-size:0.6rem;color:var(--muted);letter-spacing:3px;margin-bottom:4px;}
-    .page-title{
-      font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;
-      color:var(--accent);letter-spacing:2px;
-      text-shadow:0 0 10px rgba(0,255,65,0.3);
-    }
+    .page-title{font-family:'Orbitron',monospace;font-size:1rem;font-weight:700;color:var(--accent);letter-spacing:2px;text-shadow:0 0 10px rgba(0,255,65,0.3);}
     .page-sub{font-size:0.7rem;color:var(--muted2);margin-top:4px;letter-spacing:0.5px;}
 
     /* ── Module cards ── */
-    .module{
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:18px;margin-bottom:14px;
-      position:relative;
-    }
-    .module::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:1px;
-      background:linear-gradient(90deg,var(--accent),transparent);
-    }
-    .module-tag{
-      font-size:0.58rem;color:var(--muted);letter-spacing:2px;
-      margin-bottom:4px;text-transform:uppercase;
-    }
-    .module-title{
-      font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;
-      color:var(--text);margin-bottom:14px;letter-spacing:1px;
-    }
-    .status-badge{
-      position:absolute;top:14px;right:14px;
-      font-size:0.58rem;color:var(--muted);letter-spacing:1px;
-      background:var(--panel);border:1px solid var(--border);padding:2px 8px;
-    }
+    .module{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:18px;margin-bottom:14px;position:relative;}
+    .module::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+    .module-tag{font-size:0.58rem;color:var(--muted);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase;}
+    .module-title{font-family:'Orbitron',monospace;font-size:0.78rem;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:1px;}
+    .status-badge{position:absolute;top:14px;right:14px;font-size:0.58rem;color:var(--muted);letter-spacing:1px;background:var(--panel);border:1px solid var(--border);padding:2px 8px;}
 
     /* ── Inputs ── */
-    textarea{
-      width:100%;background:var(--bg);border:1px solid var(--border);
-      border-radius:2px;color:var(--text);
-      font-family:'Share Tech Mono',monospace;font-size:0.82rem;
-      line-height:1.7;padding:12px;resize:vertical;min-height:110px;
-      outline:none;transition:border-color 0.2s;
-    }
+    textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.82rem;line-height:1.7;padding:12px;resize:vertical;min-height:110px;outline:none;transition:border-color 0.2s;}
     textarea::placeholder{color:var(--muted);}
     textarea:focus{border-color:var(--accent);box-shadow:0 0 8px rgba(0,255,65,0.15);}
-
-    .input-meta{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-top:6px;font-size:0.62rem;color:var(--muted);
-    }
+    .input-meta{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:0.62rem;color:var(--muted);}
 
     /* ── Upload zone ── */
-    .upload-zone{
-      border:1px dashed var(--muted);border-radius:2px;padding:28px 20px;
-      text-align:center;cursor:pointer;transition:all 0.2s;position:relative;
-      background:var(--bg);
-    }
-    .upload-zone:hover,.upload-zone.dragover{
-      border-color:var(--accent);background:var(--accent-dim);
-      box-shadow:0 0 16px rgba(0,255,65,0.1);
-    }
-    .upload-zone input{
-      position:absolute;top:0;left:0;width:100%;height:100%;
-      opacity:0;cursor:pointer;z-index:2;
-    }
+    .upload-zone{border:1px dashed var(--muted);border-radius:2px;padding:28px 20px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;background:var(--bg);}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 16px rgba(0,255,65,0.1);}
+    .upload-zone input{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2;}
     .upload-icon{font-size:1.6rem;margin-bottom:6px;display:block;}
     .upload-title{font-size:0.78rem;color:var(--text);margin-bottom:3px;}
     .upload-sub{font-size:0.65rem;color:var(--muted);}
-
-    .file-chip{
-      margin-top:8px;padding:6px 10px;
-      background:var(--accent-dim);border:1px solid var(--accent);
-      font-size:0.72rem;color:var(--accent);display:none;
-      align-items:center;gap:6px;border-radius:2px;
-    }
+    .file-chip{margin-top:8px;padding:6px 10px;background:var(--accent-dim);border:1px solid var(--accent);font-size:0.72rem;color:var(--accent);display:none;align-items:center;gap:6px;border-radius:2px;}
     .file-chip.show{display:flex;}
 
     /* ── Buttons ── */
-    .btn{
-      width:100%;padding:11px;margin-top:10px;
-      border:none;border-radius:2px;cursor:pointer;
-      font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;
-      letter-spacing:2px;transition:all 0.2s;
-      display:flex;align-items:center;justify-content:center;gap:8px;
-    }
-    .btn-primary{
-      background:var(--accent-dim2);color:var(--accent);
-      border:1px solid var(--accent);
-      text-shadow:0 0 8px rgba(0,255,65,0.5);
-    }
-    .btn-primary:hover:not(:disabled){
-      background:rgba(0,255,65,0.25);
-      box-shadow:0 0 20px rgba(0,255,65,0.3);
-    }
-    .btn-primary:disabled{
-      background:var(--panel);color:var(--muted);
-      border-color:var(--border);cursor:not-allowed;
-      text-shadow:none;
-    }
-    .btn-danger{
-      background:var(--danger-dim);color:var(--danger);
-      border:1px solid var(--danger);display:none;margin-top:10px;
-      text-shadow:0 0 8px rgba(255,48,48,0.4);
-    }
+    .btn{width:100%;padding:11px;margin-top:10px;border:none;border-radius:2px;cursor:pointer;font-family:'Orbitron',monospace;font-size:0.72rem;font-weight:700;letter-spacing:2px;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-primary{background:var(--accent-dim2);color:var(--accent);border:1px solid var(--accent);text-shadow:0 0 8px rgba(0,255,65,0.5);}
+    .btn-primary:hover:not(:disabled){background:rgba(0,255,65,0.25);box-shadow:0 0 20px rgba(0,255,65,0.3);}
+    .btn-primary:disabled{background:var(--panel);color:var(--muted);border-color:var(--border);cursor:not-allowed;text-shadow:none;}
+    .btn-danger{background:var(--danger-dim);color:var(--danger);border:1px solid var(--danger);display:none;margin-top:10px;text-shadow:0 0 8px rgba(255,48,48,0.4);}
     .btn-danger.show{display:flex;}
     .btn-danger:hover{background:rgba(255,48,48,0.2);}
     .btn-danger.reported{border-color:var(--accent);color:var(--accent);pointer-events:none;}
@@ -242,100 +93,47 @@
     /* ── Loader ── */
     .loader{display:none;align-items:center;gap:10px;padding:16px 0;font-size:0.75rem;color:var(--accent);}
     .loader.show{display:flex;}
-    .spinner{
-      width:14px;height:14px;border:2px solid var(--border);
-      border-top-color:var(--accent);border-radius:50%;
-      animation:spin 0.7s linear infinite;
-    }
+    .spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
     .blink{animation:blink 1s step-end infinite;}
 
     /* ── Result ── */
     .result{display:none;margin-top:14px;}
     .result.show{display:block;}
-
-    .result-header{
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:16px;
-      display:flex;align-items:center;gap:20px;margin-bottom:10px;
-      position:relative;
-    }
-    .result-header::before{
-      content:'';position:absolute;top:0;left:0;right:0;height:1px;
-      background:linear-gradient(90deg,var(--danger),transparent);
-    }
+    .result-header{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:16px;display:flex;align-items:center;gap:20px;margin-bottom:10px;position:relative;}
+    .result-header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--danger),transparent);}
     .result-ring{position:relative;width:80px;height:80px;flex-shrink:0;}
     .result-ring svg{transform:rotate(-90deg);width:100%;height:100%;}
     .ring-bg{fill:none;stroke:#1a2a1a;stroke-width:6;}
     .ring-fill{fill:none;stroke-width:6;stroke-linecap:round;stroke-dasharray:220;stroke-dashoffset:220;transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1),stroke 0.3s;}
-    .ring-num{
-      position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-      font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;
-    }
+    .ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:1.2rem;font-weight:900;}
     .result-meta{flex:1;}
     .result-label{font-size:0.58rem;color:var(--muted);letter-spacing:2px;margin-bottom:4px;}
-    .verdict-chip{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:4px 10px;border-radius:2px;
-      font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;
-      margin-bottom:6px;letter-spacing:1px;
-    }
+    .verdict-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:2px;font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;margin-bottom:6px;letter-spacing:1px;}
     .v-dot{width:6px;height:6px;border-radius:50%;}
     .pattern{font-size:0.68rem;color:var(--muted2);}
     .pattern strong{color:var(--text);}
-
-    .result-sec{
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:14px 16px;margin-bottom:10px;
-    }
-    .sec-head{
-      font-size:0.6rem;color:var(--muted);letter-spacing:2px;
-      margin-bottom:10px;display:flex;align-items:center;gap:6px;
-      text-transform:uppercase;
-    }
+    .result-sec{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:14px 16px;margin-bottom:10px;}
+    .sec-head{font-size:0.6rem;color:var(--muted);letter-spacing:2px;margin-bottom:10px;display:flex;align-items:center;gap:6px;text-transform:uppercase;}
     .sec-head::after{content:'';flex:1;height:1px;background:var(--border);}
     .tags{display:flex;flex-wrap:wrap;gap:5px;}
-    .tag{
-      display:inline-flex;align-items:center;gap:4px;
-      padding:4px 9px;border-radius:2px;font-size:0.68rem;
-    }
+    .tag{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:2px;font-size:0.68rem;}
     .tag-d{background:var(--danger-dim);color:#ff8080;border:1px solid rgba(255,48,48,0.25);}
     .tag-s{background:var(--safe-dim);color:#80ff80;border:1px solid rgba(0,255,65,0.25);}
     .empty-tag{color:var(--muted);font-size:0.72rem;font-style:italic;}
-
-    .advice-row{
-      display:flex;gap:10px;align-items:flex-start;
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:12px 14px;margin-bottom:10px;
-    }
+    .advice-row{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-bottom:10px;}
     .advice-icon{font-size:0.9rem;flex-shrink:0;margin-top:1px;}
     .advice-text{font-size:0.75rem;color:var(--muted2);line-height:1.6;font-family:'DM Sans',sans-serif;}
-
-    .source-chip{
-      font-size:0.68rem;color:var(--accent);
-      background:var(--accent-dim);border:1px solid rgba(0,255,65,0.2);
-      border-radius:2px;padding:5px 10px;margin-bottom:10px;display:none;
-    }
+    .source-chip{font-size:0.68rem;color:var(--accent);background:var(--accent-dim);border:1px solid rgba(0,255,65,0.2);border-radius:2px;padding:5px 10px;margin-bottom:10px;display:none;}
     .source-chip.show{display:block;}
 
     /* ── Dashboard ── */
     .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-    .stat-card{
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:14px;text-align:center;position:relative;
-    }
+    .stat-card{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:14px;text-align:center;position:relative;}
     .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
     .stat-num{font-family:'Orbitron',monospace;font-size:1.6rem;font-weight:900;line-height:1;}
     .stat-label{font-size:0.6rem;color:var(--muted);letter-spacing:1px;margin-top:4px;text-transform:uppercase;}
-
-    .hist-item{
-      display:flex;align-items:center;gap:12px;
-      padding:10px 12px;background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;margin-bottom:6px;animation:fadeUp 0.3s ease both;
-    }
-    .hist-score{
-      width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-      font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;flex-shrink:0;border:2px solid;
-    }
+    .hist-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:4px;margin-bottom:6px;animation:fadeUp 0.3s ease both;}
+    .hist-score{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;flex-shrink:0;border:2px solid;}
     .hist-info{flex:1;min-width:0;}
     .hist-verdict{font-size:0.72rem;font-weight:600;margin-bottom:1px;}
     .hist-preview{font-size:0.68rem;color:var(--muted2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -343,11 +141,7 @@
     .hist-time{font-size:0.62rem;color:var(--muted);flex-shrink:0;font-family:'Orbitron',monospace;}
 
     /* ── Risk DB ── */
-    .scam-card{
-      background:var(--panel2);border:1px solid var(--border);
-      border-radius:4px;padding:14px;margin-bottom:8px;
-      animation:fadeUp 0.3s ease both;position:relative;
-    }
+    .scam-card{background:var(--panel2);border:1px solid var(--border);border-radius:4px;padding:14px;margin-bottom:8px;animation:fadeUp 0.3s ease both;position:relative;}
     .scam-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--danger),transparent);}
     .scam-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
     .scam-pill{font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:2px;font-family:'Orbitron',monospace;}
@@ -356,14 +150,9 @@
     .scam-flags{display:flex;flex-wrap:wrap;gap:4px;}
     .scam-flag{font-size:0.62rem;padding:2px 7px;border-radius:2px;background:var(--danger-dim);color:#ff8080;border:1px solid rgba(255,48,48,0.15);}
     .scam-time{font-size:0.6rem;color:var(--muted);font-family:'Orbitron',monospace;}
-
     .db-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
     .db-count{font-size:0.65rem;color:var(--muted);}
-    .refresh-btn{
-      padding:5px 10px;background:var(--panel2);border:1px solid var(--border);
-      border-radius:2px;color:var(--muted2);font-size:0.65rem;cursor:pointer;
-      font-family:'Share Tech Mono',monospace;transition:all 0.2s;
-    }
+    .refresh-btn{padding:5px 10px;background:var(--panel2);border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-size:0.65rem;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all 0.2s;}
     .refresh-btn:hover{color:var(--accent);border-color:var(--accent);}
 
     /* ── Knowledge Hub ── */
@@ -378,19 +167,14 @@
     /* ── Right panel ── */
     .rp-title{font-family:'Orbitron',monospace;font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
     .rp-title::after{content:'';flex:1;height:1px;background:var(--border);}
-
     .mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:18px;}
     .mini-stat{background:var(--bg);border:1px solid var(--border);border-radius:2px;padding:10px;text-align:center;}
     .mini-num{font-family:'Orbitron',monospace;font-size:0.8rem;font-weight:700;}
     .mini-label{font-size:0.55rem;color:var(--muted);margin-top:2px;letter-spacing:0.5px;}
-
-    /* Gauge */
     .gauge-wrap{text-align:center;margin-bottom:18px;}
     .gauge-svg{width:130px;height:75px;}
     .gauge-label{font-size:0.6rem;color:var(--muted);margin-top:4px;letter-spacing:1px;}
     .gauge-value{font-family:'Orbitron',monospace;font-size:1rem;font-weight:900;margin-top:2px;}
-
-    /* Feed */
     .feed-item{padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;}
     .feed-item:last-child{border-bottom:none;}
     .feed-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
@@ -399,32 +183,95 @@
     .feed-meta{font-size:0.58rem;color:var(--muted);margin-top:1px;font-family:'Orbitron',monospace;}
     .feed-empty{font-size:0.7rem;color:var(--muted);text-align:center;padding:16px 0;}
 
+    /* ── CHAT FLOATING BUTTON ── */
+    .chat-fab{
+      position:fixed;bottom:80px;right:20px;z-index:500;
+      width:52px;height:52px;border-radius:50%;
+      background:var(--accent-dim2);border:2px solid var(--accent);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.4rem;cursor:pointer;
+      box-shadow:0 0 20px rgba(0,255,65,0.4);
+      transition:all 0.2s;
+    }
+    .chat-fab:hover{box-shadow:0 0 30px rgba(0,255,65,0.7);transform:scale(1.05);}
+    .chat-fab .unread-dot{position:absolute;top:2px;right:2px;width:10px;height:10px;background:var(--danger);border-radius:50%;display:none;}
+    .chat-fab .unread-dot.show{display:block;}
+
+    /* ── CHAT WINDOW (floating) ── */
+    .chat-window{
+      position:fixed;bottom:144px;right:20px;z-index:499;
+      width:340px;height:480px;
+      background:var(--panel);border:1px solid var(--accent);
+      border-radius:4px;display:none;flex-direction:column;
+      box-shadow:0 0 30px rgba(0,255,65,0.2);
+      animation:fadeUp 0.2s ease both;
+    }
+    .chat-window.open{display:flex;}
+    .chat-win-header{
+      padding:12px 16px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      background:var(--panel2);flex-shrink:0;position:relative;
+    }
+    .chat-win-header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--accent),transparent);}
+    .chat-win-title{font-family:'Orbitron',monospace;font-size:0.7rem;color:var(--accent);letter-spacing:1px;}
+    .chat-win-sub{font-size:0.58rem;color:var(--muted);margin-top:2px;}
+    .chat-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px;}
+    .chat-close:hover{color:var(--danger);}
+
+    /* ── CHAT FULL PAGE ── */
+    .chat-full-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .chat-clear-btn{padding:5px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:2px;color:var(--muted2);font-size:0.65rem;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all 0.2s;}
+    .chat-clear-btn:hover{color:var(--danger);border-color:var(--danger);}
+
+    /* ── CHAT MESSAGES ── */
+    .chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+    .chat-msg{display:flex;gap:8px;animation:fadeUp 0.2s ease both;}
+    .chat-msg.user{flex-direction:row-reverse;}
+    .chat-bubble{max-width:85%;padding:8px 12px;border-radius:4px;font-size:0.75rem;line-height:1.6;font-family:'DM Sans',sans-serif;}
+    .chat-msg.user .chat-bubble{background:var(--accent-dim2);border:1px solid var(--accent);color:var(--text);border-radius:4px 0 4px 4px;}
+    .chat-msg.assistant .chat-bubble{background:var(--panel2);border:1px solid var(--border);color:var(--muted2);border-radius:0 4px 4px 4px;}
+    .chat-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;margin-top:2px;}
+    .chat-msg.user .chat-avatar{background:var(--accent-dim2);border:1px solid var(--accent);color:var(--accent);}
+    .chat-msg.assistant .chat-avatar{background:var(--panel2);border:1px solid var(--border);color:var(--muted);}
+    .chat-time{font-size:0.55rem;color:var(--muted);margin-top:3px;font-family:'Orbitron',monospace;}
+    .chat-msg.user .chat-time{text-align:right;}
+    .chat-typing{display:none;align-items:center;gap:4px;padding:8px 12px;}
+    .chat-typing.show{display:flex;}
+    .typing-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:typingBounce 1.2s infinite;}
+    .typing-dot:nth-child(2){animation-delay:0.2s;}
+    .typing-dot:nth-child(3){animation-delay:0.4s;}
+
+    /* ── CHAT INPUT ── */
+    .chat-input-wrap{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--panel2);}
+    .chat-input{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:0.75rem;padding:8px 10px;outline:none;resize:none;height:38px;}
+    .chat-input:focus{border-color:var(--accent);}
+    .chat-send{width:38px;height:38px;background:var(--accent-dim2);border:1px solid var(--accent);border-radius:2px;color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.2s;}
+    .chat-send:hover{background:rgba(0,255,65,0.25);}
+    .chat-send:disabled{opacity:0.4;cursor:not-allowed;}
+
+    /* ── Suggestions ── */
+    .chat-suggestions{padding:8px 12px;display:flex;flex-wrap:wrap;gap:5px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .suggestion-chip{font-size:0.62rem;padding:3px 8px;border-radius:2px;background:var(--accent-dim);border:1px solid rgba(0,255,65,0.2);color:var(--accent);cursor:pointer;transition:all 0.15s;font-family:'Share Tech Mono',monospace;}
+    .suggestion-chip:hover{background:var(--accent-dim2);}
+
+    /* ── Empty chat state ── */
+    .chat-empty{text-align:center;padding:30px 16px;color:var(--muted);}
+    .chat-empty-icon{font-size:2rem;margin-bottom:8px;}
+    .chat-empty-title{font-family:'Orbitron',monospace;font-size:0.72rem;color:var(--accent);margin-bottom:6px;}
+    .chat-empty-sub{font-size:0.65rem;line-height:1.6;}
+
     /* Colors */
-    .c-d{color:var(--danger);}
-    .c-w{color:var(--warn);}
-    .c-s{color:var(--accent);}
+    .c-d{color:var(--danger);}.c-w{color:var(--warn);}.c-s{color:var(--accent);}
     .pill-d{background:var(--danger-dim);color:#ff8080;border:1px solid rgba(255,48,48,0.3);}
     .pill-w{background:var(--warn-dim);color:#ffcc60;border:1px solid rgba(255,170,0,0.3);}
     .pill-s{background:var(--safe-dim);color:#80ff80;border:1px solid rgba(0,255,65,0.3);}
-    .dot-d{background:var(--danger);}
-    .dot-w{background:var(--warn);}
-    .dot-s{background:var(--accent);}
-
+    .dot-d{background:var(--danger);}.dot-w{background:var(--warn);}.dot-s{background:var(--accent);}
     .empty-state{text-align:center;padding:36px 20px;color:var(--muted);font-size:0.75rem;}
 
     /* ── Mobile bottom nav ── */
-    .bottom-nav{
-      display:none;position:fixed;bottom:0;left:0;right:0;
-      background:var(--panel);border-top:1px solid var(--border);
-      padding:8px 0 14px;z-index:100;
-    }
+    .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);padding:8px 0 14px;z-index:100;}
     .bnav-inner{display:flex;justify-content:space-around;}
-    .bnav-btn{
-      display:flex;flex-direction:column;align-items:center;gap:3px;
-      background:none;border:none;color:var(--muted);cursor:pointer;
-      font-family:'Share Tech Mono',monospace;font-size:0.55rem;
-      padding:4px 8px;min-width:54px;letter-spacing:0.5px;
-    }
+    .bnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:0.55rem;padding:4px 6px;min-width:48px;letter-spacing:0.5px;}
     .bnav-btn.active{color:var(--accent);}
     .bnav-icon{font-size:1.1rem;}
 
@@ -434,24 +281,21 @@
       body{padding-bottom:60px;}
       .sidebar{display:none;}
       .topbar{padding:8px 14px;}
-      .brand-name{font-size:0.75rem;}
-      .content{padding:14px 12px;}
+      .content{padding:14px 12px 80px;}
       .bottom-nav{display:block;}
       .stats-grid{grid-template-columns:1fr 1fr;}
       .stat-card:last-child{grid-column:span 2;}
       .result-header{flex-direction:column;gap:12px;}
       .module{padding:14px;}
-      .page-title{font-size:0.85rem;}
+      .chat-window{width:calc(100vw - 20px);right:10px;}
+      .chat-fab{bottom:76px;}
     }
-    @media(max-width:380px){
-      .stats-grid{grid-template-columns:1fr;}
-      .stat-card:last-child{grid-column:span 1;}
-    }
+    @media(max-width:380px){.stats-grid{grid-template-columns:1fr;}.stat-card:last-child{grid-column:span 1;}}
 
     @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
     @keyframes spin{to{transform:rotate(360deg);}}
     @keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
-    @keyframes pulse{0%,100%{box-shadow:0 0 8px rgba(0,255,65,0.3);}50%{box-shadow:0 0 20px rgba(0,255,65,0.6);}}
+    @keyframes typingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
 
     ::-webkit-scrollbar{width:4px;}
     ::-webkit-scrollbar-track{background:transparent;}
@@ -465,15 +309,13 @@
   <div class="brand">
     <div class="brand-logo">🛡</div>
     <div>
-      <div class="brand-name">SCAMSHIELD.OS<span>THREAT ANALYSIS SYSTEM v2.0</span></div>
+      <div class="brand-name">SCAMSHIELD.OS<span>THREAT ANALYSIS SYSTEM v3.0</span></div>
     </div>
   </div>
   <div class="topbar-right">
     <span class="secure-badge">● SECURE</span>
-    <div class="topbar-icons">
-      <div class="topbar-icon">🔔</div>
-      <div class="topbar-icon">⚙</div>
-    </div>
+    <div class="topbar-icon">🔔</div>
+    <div class="topbar-icon">⚙</div>
   </div>
 </header>
 
@@ -482,25 +324,15 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <span class="nav-label">// MAIN</span>
-    <button class="nav-item active" onclick="showPage('dashboard',this)" id="nav-dashboard">
-      <span class="nav-icon">▣</span>DASHBOARD.EXE
-    </button>
-    <button class="nav-item" onclick="showPage('analyze',this)" id="nav-analyze">
-      <span class="nav-icon">►</span>SUBMIT_ANALYSIS
-    </button>
+    <button class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">▣</span>DASHBOARD.EXE</button>
+    <button class="nav-item" onclick="showPage('analyze',this)"><span class="nav-icon">►</span>SUBMIT_ANALYSIS</button>
     <span class="nav-label">// RISK_DATA</span>
-    <button class="nav-item" onclick="showPage('riskdb',this);loadRecentScams()" id="nav-riskdb">
-      <span class="nav-icon">⚠</span>THREAT_FEED
-    </button>
-    <span class="nav-label">// RESOURCES</span>
-    <button class="nav-item" onclick="showPage('kb',this)" id="nav-kb">
-      <span class="nav-icon">◉</span>KNOWLEDGE_HUB
-    </button>
+    <button class="nav-item" onclick="showPage('riskdb',this);loadRecentScams()"><span class="nav-icon">⚠</span>THREAT_FEED</button>
+    <span class="nav-label">// INTEL</span>
+    <button class="nav-item" onclick="showPage('chat',this);loadChatHistory()"><span class="nav-icon">💬</span>AI_ASSISTANT</button>
+    <button class="nav-item" onclick="showPage('kb',this)"><span class="nav-icon">◉</span>KNOWLEDGE_HUB</button>
     <div class="sidebar-footer">
-      KERNEL: v2.0.0<br>
-      ENGINE: LLAMA-3.3<br>
-      DB: SUPABASE<br>
-      STATUS: <span style="color:var(--accent)">ONLINE ●</span>
+      KERNEL: v3.0.0<br>ENGINE: LLAMA-3.3<br>DB: SUPABASE<br>OCR: TESSERACT<br>STATUS: <span style="color:var(--accent)">ONLINE ●</span>
     </div>
   </aside>
 
@@ -515,18 +347,9 @@
         <div class="page-sub">SCAN ACTIVITY · RISK METRICS · HISTORY LOG</div>
       </div>
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-num" id="stat-total" style="color:var(--accent)">0</div>
-          <div class="stat-label">TOTAL SCANS</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-scams" style="color:var(--danger)">0</div>
-          <div class="stat-label">THREATS FOUND</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-num" id="stat-safe" style="color:var(--accent)">0</div>
-          <div class="stat-label">SAFE CLEARED</div>
-        </div>
+        <div class="stat-card"><div class="stat-num" id="stat-total" style="color:var(--accent)">0</div><div class="stat-label">TOTAL SCANS</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-scams" style="color:var(--danger)">0</div><div class="stat-label">THREATS FOUND</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-safe" style="color:var(--accent)">0</div><div class="stat-label">SAFE CLEARED</div></div>
       </div>
       <div class="module">
         <div class="module-tag">// HISTORY_LOG</div>
@@ -543,84 +366,48 @@
         <div class="page-sub">AWAITING DATA INPUT FOR RECURSIVE THREAT ANALYSIS</div>
       </div>
 
-      <!-- Module 1 -->
       <div class="module" id="module1">
         <div class="module-tag">MODULE_01 // MESSAGE_DECODER</div>
         <div class="module-title">COMMAND ENTRY POINT</div>
         <span class="status-badge">STATUS: STANDBY</span>
         <textarea id="msgInput" placeholder="// PASTE WHATSAPP · TELEGRAM · EMAIL MESSAGE HERE&#10;// e.g. Work from home, earn Rs 50,000/month. Pay Rs 500 registration fee. Call now."></textarea>
-        <div class="input-meta">
-          <span style="color:var(--muted)">// INPUT_BUFFER</span>
-          <span id="charCount">0 CHARS</span>
-        </div>
-        <button class="btn btn-primary" id="btnText" onclick="analyzeText()">
-          ⚡ EXECUTE_DECIPHER_SCAN
-        </button>
+        <div class="input-meta"><span>// INPUT_BUFFER</span><span id="charCount">0 CHARS</span></div>
+        <button class="btn btn-primary" id="btnText" onclick="analyzeText()">⚡ EXECUTE_DECIPHER_SCAN</button>
       </div>
 
-      <!-- Module 2 -->
       <div class="module" id="module2">
         <div class="module-tag">MODULE_02 // DOCUMENT_VERIFIER</div>
         <div class="module-title">FILE INTEGRITY CHECK</div>
-        <span class="status-badge">TYPE: FILE_SCAN</span>
+        <span class="status-badge">TYPE: MULTI_SCAN</span>
         <div class="upload-zone" id="uploadZone">
-          <input type="file" id="fileInput" accept=".pdf,.txt" onchange="onFileSelected()"/>
+          <input type="file" id="fileInput" accept=".pdf,.txt,.docx,.doc,.jpg,.jpeg,.png,.webp,.bmp,.tiff" onchange="onFileSelected()"/>
           <span class="upload-icon">☁</span>
           <div class="upload-title">DRAG_DROP_OR_LINK_FILE</div>
-          <div class="upload-sub">PDF · TXT · DOCX ALLOWED</div>
+          <div class="upload-sub">PDF · DOCX · TXT · JPG · PNG · WEBP · TIFF SUPPORTED</div>
         </div>
         <div class="file-chip" id="fileChip">📎 <span id="fileName"></span></div>
-        <button class="btn btn-primary" id="btnFile" onclick="analyzeFile()" disabled>
-          ◎ INITIATE_INTEGRITY_CHECK
-        </button>
+        <button class="btn btn-primary" id="btnFile" onclick="analyzeFile()" disabled>◎ INITIATE_INTEGRITY_CHECK</button>
       </div>
 
-      <!-- Loader -->
-      <div class="loader" id="loader">
-        <div class="spinner"></div>
-        <span>SCANNING<span class="blink">_</span></span>
-      </div>
+      <div class="loader" id="loader"><div class="spinner"></div><span>SCANNING<span class="blink">_</span></span></div>
 
-      <!-- Result -->
       <div class="result" id="result">
         <div class="source-chip" id="sourceChip"></div>
-
         <div class="result-header">
           <div class="result-ring">
-            <svg viewBox="0 0 80 80">
-              <circle class="ring-bg" cx="40" cy="40" r="35"/>
-              <circle class="ring-fill" id="ringFill" cx="40" cy="40" r="35"/>
-            </svg>
+            <svg viewBox="0 0 80 80"><circle class="ring-bg" cx="40" cy="40" r="35"/><circle class="ring-fill" id="ringFill" cx="40" cy="40" r="35"/></svg>
             <div class="ring-num" id="ringNum">0</div>
           </div>
           <div class="result-meta">
             <div class="result-label">// THREAT_SCORE</div>
-            <div class="verdict-chip" id="verdictChip">
-              <span class="v-dot" id="vDot"></span>
-              <span id="vText"></span>
-            </div>
+            <div class="verdict-chip" id="verdictChip"><span class="v-dot" id="vDot"></span><span id="vText"></span></div>
             <div class="pattern" id="patternLabel"></div>
           </div>
         </div>
-
-        <div class="result-sec">
-          <div class="sec-head">RED_FLAGS_DETECTED</div>
-          <div class="tags" id="redFlags"></div>
-        </div>
-
-        <div class="result-sec">
-          <div class="sec-head">SAFE_SIGNALS_FOUND</div>
-          <div class="tags" id="safeSignals"></div>
-        </div>
-
-        <div class="advice-row">
-          <div class="advice-icon">▶</div>
-          <div class="advice-text" id="adviceText"></div>
-        </div>
-
-        <button class="btn btn-danger" id="reportBtn" onclick="reportScam()">
-          ⚠ REPORT_TO_THREAT_DATABASE
-        </button>
+        <div class="result-sec"><div class="sec-head">RED_FLAGS_DETECTED</div><div class="tags" id="redFlags"></div></div>
+        <div class="result-sec"><div class="sec-head">SAFE_SIGNALS_FOUND</div><div class="tags" id="safeSignals"></div></div>
+        <div class="advice-row"><div class="advice-icon">▶</div><div class="advice-text" id="adviceText"></div></div>
+        <button class="btn btn-danger" id="reportBtn" onclick="reportScam()">⚠ REPORT_TO_THREAT_DATABASE</button>
       </div>
     </div>
 
@@ -631,11 +418,41 @@
         <div class="page-title">THREAT_FEED</div>
         <div class="page-sub">LIVE COMMUNITY-REPORTED JOB SCAMS · UPDATED IN REAL TIME</div>
       </div>
-      <div class="db-bar">
-        <span class="db-count">// SHOWING LATEST 20 THREAT REPORTS</span>
-        <button class="refresh-btn" onclick="loadRecentScams()">↻ REFRESH</button>
-      </div>
+      <div class="db-bar"><span class="db-count">// SHOWING LATEST 20 THREAT REPORTS</span><button class="refresh-btn" onclick="loadRecentScams()">↻ REFRESH</button></div>
       <div id="scamsList"><div class="empty-state">LOADING THREAT DATABASE...</div></div>
+    </div>
+
+    <!-- AI Assistant (full page) -->
+    <div class="page" id="page-chat">
+      <div class="page-header">
+        <div class="page-eyebrow">// AI_INTEL</div>
+        <div class="page-title">AI_ASSISTANT</div>
+        <div class="page-sub">JOB SCAM DETECTION EXPERT · POWERED BY LLAMA 3.3 70B</div>
+      </div>
+      <div class="chat-full-header">
+        <div style="font-size:0.68rem;color:var(--muted);">// Ask anything about job scams, fraud detection, or employment safety</div>
+        <button class="chat-clear-btn" onclick="clearChat()">✕ CLEAR_HISTORY</button>
+      </div>
+      <div style="background:var(--panel2);border:1px solid var(--border);border-radius:4px;display:flex;flex-direction:column;height:500px;">
+        <div class="chat-suggestions" id="fullSuggestions">
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">How to verify a job offer?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">What is a registration fee scam?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">How to report a scam in India?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">Is this WFH job real?</span>
+        </div>
+        <div class="chat-messages" id="fullChatMessages">
+          <div class="chat-empty">
+            <div class="chat-empty-icon">🛡</div>
+            <div class="chat-empty-title">SCAMSHIELD ASSISTANT</div>
+            <div class="chat-empty-sub">I only answer questions about job scams and employment fraud. Ask me anything related to detecting fake job offers, verifying companies, or what to do if you've been scammed.</div>
+          </div>
+        </div>
+        <div class="chat-typing" id="fullTyping"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" id="fullChatInput" placeholder="// ASK ABOUT JOB SCAMS..." rows="1" onkeydown="handleChatKey(event,'full')"></textarea>
+          <button class="chat-send" id="fullSendBtn" onclick="sendChat('full')">➤</button>
+        </div>
+      </div>
     </div>
 
     <!-- Knowledge Hub -->
@@ -645,43 +462,10 @@
         <div class="page-title">KNOWLEDGE_HUB</div>
         <div class="page-sub">THREAT INTELLIGENCE · SCAM PATTERNS · COUNTERMEASURES</div>
       </div>
-
-      <div class="kb-card">
-        <div class="kb-icon">🚩</div>
-        <div class="kb-title">TOP 5 SCAM PATTERNS IN INDIA</div>
-        <div class="kb-text">Registration Fee Scams ask you to pay ₹500–₹5,000 before getting hired — no legitimate employer charges candidates. Guaranteed Job Scams promise placement without any interview. Work From Home Scams promise unrealistic earnings like ₹50,000/month for simple data entry. Impersonation Scams use company names like TCS or Infosys but contact via WhatsApp personal numbers. Data Harvesting Scams ask for Aadhaar, PAN, or bank details before any interview.</div>
-        <div class="kb-tags">
-          <span class="kb-tag">REG_FEE</span><span class="kb-tag">WFH_SCAM</span>
-          <span class="kb-tag">IMPERSONATION</span><span class="kb-tag">DATA_HARVEST</span>
-        </div>
-      </div>
-
-      <div class="kb-card">
-        <div class="kb-icon">✅</div>
-        <div class="kb-title">HOW TO VERIFY A JOB OFFER</div>
-        <div class="kb-text">Search the company on Google and check their official website. Legitimate HR emails use company domains — not Gmail or Yahoo. Call the company's official number from their website, not the message. Never share Aadhaar, PAN, or bank details before signing a verified offer letter. If a job offer arrives on WhatsApp from an unknown number claiming to be a major company, treat it as suspicious immediately.</div>
-        <div class="kb-tags">
-          <span class="kb-tag">VERIFY_DOMAIN</span><span class="kb-tag">OFFICIAL_CONTACT</span><span class="kb-tag">DOC_SAFETY</span>
-        </div>
-      </div>
-
-      <div class="kb-card">
-        <div class="kb-icon">📱</div>
-        <div class="kb-title">WHATSAPP · TELEGRAM THREAT SIGNALS</div>
-        <div class="kb-text">Messages forwarded many times are high-risk. Urgency phrases like "apply within 24 hours" or "limited seats" are pressure tactics. Google Form links for job applications are a major red flag. "Join our premium group" or "pay to unlock the offer" are instant disqualifiers. Poor spelling and grammar in messages from "major companies" is a strong scam indicator.</div>
-        <div class="kb-tags">
-          <span class="kb-tag">URGENCY_TACTIC</span><span class="kb-tag">GOOGLE_FORMS</span><span class="kb-tag">FORWARD_RISK</span>
-        </div>
-      </div>
-
-      <div class="kb-card">
-        <div class="kb-icon">🆘</div>
-        <div class="kb-title">INCIDENT RESPONSE PROTOCOL</div>
-        <div class="kb-text">File a complaint at cybercrime.gov.in immediately. Call Cyber Crime Helpline: 1930. Report the scam on ScamShield to warn others in the community. Block the sender and report the number on WhatsApp. If bank details were shared, contact your bank immediately to freeze suspicious transactions. Document all messages and payment receipts before reporting.</div>
-        <div class="kb-tags">
-          <span class="kb-tag">cybercrime.gov.in</span><span class="kb-tag">HELPLINE:1930</span><span class="kb-tag">REPORT+BLOCK</span>
-        </div>
-      </div>
+      <div class="kb-card"><div class="kb-icon">🚩</div><div class="kb-title">TOP 5 SCAM PATTERNS IN INDIA</div><div class="kb-text">Registration Fee Scams ask you to pay ₹500–₹5,000 before getting hired — no legitimate employer charges candidates. Guaranteed Job Scams promise placement without any interview. Work From Home Scams promise unrealistic earnings like ₹50,000/month for simple data entry. Impersonation Scams use company names like TCS or Infosys but contact via WhatsApp personal numbers. Data Harvesting Scams ask for Aadhaar, PAN, or bank details before any interview.</div><div class="kb-tags"><span class="kb-tag">REG_FEE</span><span class="kb-tag">WFH_SCAM</span><span class="kb-tag">IMPERSONATION</span><span class="kb-tag">DATA_HARVEST</span></div></div>
+      <div class="kb-card"><div class="kb-icon">✅</div><div class="kb-title">HOW TO VERIFY A JOB OFFER</div><div class="kb-text">Search the company on Google and check their official website. Legitimate HR emails use company domains — not Gmail or Yahoo. Call the company's official number from their website, not the message. Never share Aadhaar, PAN, or bank details before signing a verified offer letter. If a job offer arrives on WhatsApp from an unknown number claiming to be a major company, treat it as suspicious immediately.</div><div class="kb-tags"><span class="kb-tag">VERIFY_DOMAIN</span><span class="kb-tag">OFFICIAL_CONTACT</span><span class="kb-tag">DOC_SAFETY</span></div></div>
+      <div class="kb-card"><div class="kb-icon">📱</div><div class="kb-title">WHATSAPP · TELEGRAM THREAT SIGNALS</div><div class="kb-text">Messages forwarded many times are high-risk. Urgency phrases like "apply within 24 hours" or "limited seats" are pressure tactics. Google Form links for job applications are a major red flag. "Join our premium group" or "pay to unlock the offer" are instant disqualifiers. Poor spelling and grammar in messages from "major companies" is a strong scam indicator.</div><div class="kb-tags"><span class="kb-tag">URGENCY_TACTIC</span><span class="kb-tag">GOOGLE_FORMS</span><span class="kb-tag">FORWARD_RISK</span></div></div>
+      <div class="kb-card"><div class="kb-icon">🆘</div><div class="kb-title">INCIDENT RESPONSE PROTOCOL</div><div class="kb-text">File a complaint at cybercrime.gov.in immediately. Call Cyber Crime Helpline: 1930. Report the scam on ScamShield to warn others in the community. Block the sender and report the number on WhatsApp. If bank details were shared, contact your bank immediately to freeze suspicious transactions. Document all messages and payment receipts before reporting.</div><div class="kb-tags"><span class="kb-tag">cybercrime.gov.in</span><span class="kb-tag">HELPLINE:1930</span><span class="kb-tag">REPORT+BLOCK</span></div></div>
     </div>
 
   </main>
@@ -690,36 +474,20 @@
   <aside class="right-panel">
     <div class="rp-title">SYSTEM_HARDWARE</div>
     <div class="mini-grid">
-      <div class="mini-stat">
-        <div class="mini-num" style="color:var(--accent)">LLM</div>
-        <div class="mini-label">LLAMA_70B</div>
-      </div>
-      <div class="mini-stat">
-        <div class="mini-num" style="color:var(--warn)">API</div>
-        <div class="mini-label">FAST_V3</div>
-      </div>
-      <div class="mini-stat">
-        <div class="mini-num" style="color:var(--danger)">DB</div>
-        <div class="mini-label">SUPA_BASE</div>
-      </div>
-      <div class="mini-stat">
-        <div class="mini-num" style="color:#a78bfa;">AI</div>
-        <div class="mini-label">TRAE_SOLO</div>
-      </div>
+      <div class="mini-stat"><div class="mini-num" style="color:var(--accent)">LLM</div><div class="mini-label">LLAMA_70B</div></div>
+      <div class="mini-stat"><div class="mini-num" style="color:var(--warn)">API</div><div class="mini-label">FAST_V3</div></div>
+      <div class="mini-stat"><div class="mini-num" style="color:var(--danger)">DB</div><div class="mini-label">SUPA_BASE</div></div>
+      <div class="mini-stat"><div class="mini-num" style="color:#a78bfa;">OCR</div><div class="mini-label">TESSERACT</div></div>
     </div>
-
     <div class="rp-title">GLOBAL_THREAT_LEVEL</div>
     <div class="gauge-wrap">
       <svg class="gauge-svg" viewBox="0 0 130 75">
         <path d="M10 65 A55 55 0 0 1 120 65" fill="none" stroke="#1a2a1a" stroke-width="9" stroke-linecap="round"/>
-        <path id="gaugePath" d="M10 65 A55 55 0 0 1 120 65" fill="none" stroke="#ff3030" stroke-width="9" stroke-linecap="round"
-          stroke-dasharray="173" stroke-dashoffset="173"
-          style="transition:stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1);filter:drop-shadow(0 0 6px rgba(255,48,48,0.5));"/>
+        <path id="gaugePath" d="M10 65 A55 55 0 0 1 120 65" fill="none" stroke="#ff3030" stroke-width="9" stroke-linecap="round" stroke-dasharray="173" stroke-dashoffset="173" style="transition:stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1);filter:drop-shadow(0 0 6px rgba(255,48,48,0.5));"/>
       </svg>
       <div class="gauge-label">// PROBABILITY</div>
       <div class="gauge-value" id="gaugeValue" style="color:var(--danger)">LOADING...</div>
     </div>
-
     <div class="rp-title">LIVE_INTEL_FEED</div>
     <div id="liveFeed"><div class="feed-empty">FETCHING INTEL...</div></div>
   </aside>
@@ -729,26 +497,60 @@
 <!-- Mobile bottom nav -->
 <nav class="bottom-nav">
   <div class="bnav-inner">
-    <button class="bnav-btn active" id="bnav-dashboard" onclick="showPage('dashboard',null);setBottomNav('dashboard')">
-      <span class="bnav-icon">▣</span>DASH
-    </button>
-    <button class="bnav-btn" id="bnav-analyze" onclick="showPage('analyze',null);setBottomNav('analyze')">
-      <span class="bnav-icon">►</span>SCAN
-    </button>
-    <button class="bnav-btn" id="bnav-riskdb" onclick="showPage('riskdb',null);loadRecentScams();setBottomNav('riskdb')">
-      <span class="bnav-icon">⚠</span>FEED
-    </button>
-    <button class="bnav-btn" id="bnav-kb" onclick="showPage('kb',null);setBottomNav('kb')">
-      <span class="bnav-icon">◉</span>INTEL
-    </button>
+    <button class="bnav-btn active" id="bnav-dashboard" onclick="showPage('dashboard',null);setBottomNav('dashboard')"><span class="bnav-icon">▣</span>DASH</button>
+    <button class="bnav-btn" id="bnav-analyze" onclick="showPage('analyze',null);setBottomNav('analyze')"><span class="bnav-icon">►</span>SCAN</button>
+    <button class="bnav-btn" id="bnav-riskdb" onclick="showPage('riskdb',null);loadRecentScams();setBottomNav('riskdb')"><span class="bnav-icon">⚠</span>FEED</button>
+    <button class="bnav-btn" id="bnav-chat" onclick="showPage('chat',null);loadChatHistory();setBottomNav('chat')"><span class="bnav-icon">💬</span>CHAT</button>
+    <button class="bnav-btn" id="bnav-kb" onclick="showPage('kb',null);setBottomNav('kb')"><span class="bnav-icon">◉</span>INTEL</button>
   </div>
 </nav>
+
+<!-- Floating chat button -->
+<div class="chat-fab" id="chatFab" onclick="toggleChatWindow()">
+  💬
+  <div class="unread-dot" id="unreadDot"></div>
+</div>
+
+<!-- Floating chat window -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-win-header">
+    <div>
+      <div class="chat-win-title">🛡 SCAMSHIELD ASSISTANT</div>
+      <div class="chat-win-sub">Ask about job scams only</div>
+    </div>
+    <button class="chat-close" onclick="toggleChatWindow()">✕</button>
+  </div>
+  <div class="chat-suggestions">
+    <span class="suggestion-chip" onclick="sendSuggestion(this,'float')">Verify job offer?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this,'float')">Registration fee scam?</span>
+    <span class="suggestion-chip" onclick="sendSuggestion(this,'float')">Report a scam?</span>
+  </div>
+  <div class="chat-messages" id="floatChatMessages">
+    <div class="chat-empty">
+      <div class="chat-empty-icon">🛡</div>
+      <div class="chat-empty-title">SCAMSHIELD ASSISTANT</div>
+      <div class="chat-empty-sub">I only answer job scam related questions. How can I help you stay safe?</div>
+    </div>
+  </div>
+  <div class="chat-typing" id="floatTyping"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+  <div class="chat-input-wrap">
+    <textarea class="chat-input" id="floatChatInput" placeholder="// ASK ABOUT JOB SCAMS..." rows="1" onkeydown="handleChatKey(event,'float')"></textarea>
+    <button class="chat-send" id="floatSendBtn" onclick="sendChat('float')">➤</button>
+  </div>
+</div>
 
 <script>
 const API = 'https://scamshield-mv9n.onrender.com';
 let currentResult = null;
 let currentMessage = '';
 let scanHistory = JSON.parse(localStorage.getItem('ss_history') || '[]');
+
+// Session ID for chat (persists in localStorage)
+let sessionId = localStorage.getItem('ss_chat_session');
+if (!sessionId) {
+  sessionId = 'ss_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('ss_chat_session', sessionId);
+}
 
 // ── Navigation ─────────────────────────────────────────────────────────────
 function showPage(id, btn) {
@@ -803,9 +605,8 @@ async function analyzeText() {
       body: JSON.stringify({message: msg})
     });
     if (!res.ok) { const e = await res.json(); alert(e.detail || 'ERROR'); return; }
-    const data = await res.json();
-    renderResult(data, null);
-    saveToHistory(data, msg);
+    renderResult(await res.json(), null);
+    saveToHistory(currentResult, msg);
   } catch(e) {
     alert('BACKEND OFFLINE — RETRY IN 30 SECONDS');
   } finally { setLoading(false, 'btnText'); }
@@ -821,7 +622,7 @@ async function analyzeFile() {
     const res = await fetch(`${API}/analyze-file`, {method:'POST', body:fd});
     if (!res.ok) { const e = await res.json(); alert(e.detail || 'ERROR'); return; }
     const data = await res.json();
-    currentMessage = data.extracted_preview || data.source || 'PDF DOCUMENT';
+    currentMessage = data.extracted_preview || data.source || 'FILE';
     renderResult(data, data.source);
     saveToHistory(data, currentMessage);
   } catch(e) {
@@ -829,137 +630,86 @@ async function analyzeFile() {
   } finally { setLoading(false, 'btnFile'); }
 }
 
-// ── Loading ────────────────────────────────────────────────────────────────
 function setLoading(on, btnId) {
   document.getElementById('loader').classList.toggle('show', on);
   document.getElementById(btnId).disabled = on;
   if (on) document.getElementById('result').classList.remove('show');
 }
 
-// ── Render result + AUTO SCROLL ────────────────────────────────────────────
+// ── Render result ──────────────────────────────────────────────────────────
 function renderResult(data, source) {
   currentResult = data;
   const score = data.risk_score ?? 0;
+  let color, pillClass;
+  if (score >= 70)      { color='#ff4040'; pillClass='pill-d'; }
+  else if (score >= 40) { color='#ffaa00'; pillClass='pill-w'; }
+  else                  { color='#00ff41'; pillClass='pill-s'; }
 
-  let color, pillClass, dotClass;
-  if (score >= 70)      { color='#ff4040'; pillClass='pill-d'; dotClass='dot-d'; }
-  else if (score >= 40) { color='#ffaa00'; pillClass='pill-w'; dotClass='dot-w'; }
-  else                  { color='#00ff41'; pillClass='pill-s'; dotClass='dot-s'; }
-
-  // Ring
   const fill = document.getElementById('ringFill');
   fill.style.stroke = color;
   fill.style.filter = `drop-shadow(0 0 6px ${color}80)`;
   setTimeout(() => { fill.style.strokeDashoffset = 220 - (score/100)*220; }, 50);
   animateNum('ringNum', score, color);
 
-  // Verdict
   const chip = document.getElementById('verdictChip');
   chip.className = 'verdict-chip ' + pillClass;
   document.getElementById('vDot').style.background = color;
   document.getElementById('vDot').style.boxShadow = `0 0 6px ${color}`;
   document.getElementById('vText').textContent = data.verdict ?? '';
-  document.getElementById('patternLabel').innerHTML = data.scam_type
-    ? `PATTERN: <strong>${data.scam_type.toUpperCase()}</strong>` : '';
+  document.getElementById('patternLabel').innerHTML = data.scam_type ? `PATTERN: <strong>${data.scam_type.toUpperCase()}</strong>` : '';
 
-  // Flags
   document.getElementById('redFlags').innerHTML =
-    (data.red_flags||[]).length
-      ? data.red_flags.map(f=>`<span class="tag tag-d">⚠ ${f}</span>`).join('')
-      : '<span class="empty-tag">NONE_DETECTED</span>';
+    (data.red_flags||[]).length ? data.red_flags.map(f=>`<span class="tag tag-d">⚠ ${f}</span>`).join('') : '<span class="empty-tag">NONE_DETECTED</span>';
   document.getElementById('safeSignals').innerHTML =
-    (data.safe_signals||[]).length
-      ? data.safe_signals.map(s=>`<span class="tag tag-s">✓ ${s}</span>`).join('')
-      : '<span class="empty-tag">NONE_DETECTED</span>';
-
+    (data.safe_signals||[]).length ? data.safe_signals.map(s=>`<span class="tag tag-s">✓ ${s}</span>`).join('') : '<span class="empty-tag">NONE_DETECTED</span>';
   document.getElementById('adviceText').textContent = data.advice ?? '';
 
-  // Source
   const sc = document.getElementById('sourceChip');
   if (source) { sc.textContent = '📄 ' + source; sc.classList.add('show'); }
   else sc.classList.remove('show');
 
-  // Report btn
   const rb = document.getElementById('reportBtn');
   rb.className = 'btn btn-danger';
   if (score >= 60) { rb.classList.add('show'); rb.textContent = '⚠ REPORT_TO_THREAT_DATABASE'; rb.disabled = false; }
 
-  // Show result
   document.getElementById('result').classList.add('show');
-
-  // ── AUTO SCROLL TO RESULT ──
-  setTimeout(() => {
-    const resultEl = document.getElementById('result');
-    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  setTimeout(() => { document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
 }
 
 // ── Save history ───────────────────────────────────────────────────────────
 function saveToHistory(data, preview) {
-  scanHistory.unshift({
-    score: data.risk_score, verdict: data.verdict,
-    scam_type: data.scam_type,
-    preview: preview.substring(0, 80),
-    time: new Date().toISOString()
-  });
-  if (scanHistory.length > 50) scanHistory = scanHistory.slice(0, 50);
+  if (!data) return;
+  scanHistory.unshift({score:data.risk_score,verdict:data.verdict,scam_type:data.scam_type,preview:preview.substring(0,80),time:new Date().toISOString()});
+  if (scanHistory.length > 50) scanHistory = scanHistory.slice(0,50);
   localStorage.setItem('ss_history', JSON.stringify(scanHistory));
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 function renderDashboard() {
-  const total = scanHistory.length;
-  const threats = scanHistory.filter(s => s.score >= 60).length;
-  const safe = scanHistory.filter(s => s.score < 40).length;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('stat-scams').textContent = threats;
-  document.getElementById('stat-safe').textContent = safe;
-
+  document.getElementById('stat-total').textContent = scanHistory.length;
+  document.getElementById('stat-scams').textContent = scanHistory.filter(s=>s.score>=60).length;
+  document.getElementById('stat-safe').textContent = scanHistory.filter(s=>s.score<40).length;
   const container = document.getElementById('dash-history');
-  if (!scanHistory.length) {
-    container.innerHTML = '<div class="empty-state">[ NO SCAN RECORDS ] — RUN ANALYSIS TO POPULATE LOG</div>';
-    return;
-  }
+  if (!scanHistory.length) { container.innerHTML = '<div class="empty-state">[ NO SCAN RECORDS ] — RUN ANALYSIS TO POPULATE LOG</div>'; return; }
   container.innerHTML = scanHistory.map(s => {
     const color = s.score>=70?'var(--danger)':s.score>=40?'var(--warn)':'var(--accent)';
     const border = s.score>=70?'#ff4040':s.score>=40?'#ffaa00':'#00ff41';
-    return `<div class="hist-item">
-      <div class="hist-score" style="color:${color};border-color:${border};">${s.score}</div>
-      <div class="hist-info">
-        <div class="hist-verdict" style="color:${color};">${s.verdict}</div>
-        <div class="hist-preview">${s.preview}</div>
-        <div class="hist-type">${s.scam_type||'NO_PATTERN'}</div>
-      </div>
-      <div class="hist-time">${formatTime(s.time)}</div>
-    </div>`;
+    return `<div class="hist-item"><div class="hist-score" style="color:${color};border-color:${border};">${s.score}</div><div class="hist-info"><div class="hist-verdict" style="color:${color};">${s.verdict}</div><div class="hist-preview">${s.preview}</div><div class="hist-type">${s.scam_type||'NO_PATTERN'}</div></div><div class="hist-time">${formatTime(s.time)}</div></div>`;
   }).join('');
 }
 
 // ── Report scam ────────────────────────────────────────────────────────────
 async function reportScam() {
   if (!currentResult) return;
-  const msgToReport = currentMessage || 'DOCUMENT_ANALYZED';
   const btn = document.getElementById('reportBtn');
   btn.disabled = true; btn.textContent = 'UPLOADING TO DATABASE...';
   try {
     const res = await fetch(`${API}/report-scam`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        message_preview: msgToReport.substring(0, 200),
-        scam_type: currentResult.scam_type || 'Other',
-        risk_score: currentResult.risk_score,
-        verdict: currentResult.verdict,
-        red_flags: (currentResult.red_flags||[]).join(', ')
-      })
+      body: JSON.stringify({message_preview:(currentMessage||'').substring(0,200),scam_type:currentResult.scam_type||'Other',risk_score:currentResult.risk_score,verdict:currentResult.verdict,red_flags:(currentResult.red_flags||[]).join(', ')})
     });
-    if (res.ok) {
-      btn.textContent = '✓ THREAT_LOGGED — DATABASE UPDATED';
-      btn.classList.add('reported');
-      loadLiveFeed();
-    } else {
-      btn.textContent = '⚠ REPORT_TO_THREAT_DATABASE';
-      btn.disabled = false;
-    }
+    if (res.ok) { btn.textContent = '✓ THREAT_LOGGED — DATABASE UPDATED'; btn.classList.add('reported'); loadLiveFeed(); }
+    else { btn.textContent = '⚠ REPORT_TO_THREAT_DATABASE'; btn.disabled = false; }
   } catch(e) { btn.textContent = '⚠ REPORT_TO_THREAT_DATABASE'; btn.disabled = false; }
 }
 
@@ -969,29 +719,14 @@ async function loadRecentScams() {
   try {
     const res = await fetch(`${API}/recent-scams`);
     const data = await res.json();
-    if (!data||!data.length) {
-      document.getElementById('scamsList').innerHTML = '<div class="empty-state">NO THREATS REPORTED YET</div>';
-      return;
-    }
+    if (!data||!data.length) { document.getElementById('scamsList').innerHTML = '<div class="empty-state">NO THREATS REPORTED YET</div>'; return; }
     document.getElementById('scamsList').innerHTML = data.map(s => {
       const color = s.risk_score>=70?'#ff4040':s.risk_score>=40?'#ffaa00':'#00ff41';
       const bg = s.risk_score>=70?'var(--danger-dim)':s.risk_score>=40?'var(--warn-dim)':'var(--safe-dim)';
       const flags = s.red_flags ? s.red_flags.split(', ').filter(Boolean) : [];
-      return `<div class="scam-card">
-        <div class="scam-top">
-          <span class="scam-pill" style="background:${bg};color:${color};border:1px solid ${color}44;">
-            SCORE:${s.risk_score} · ${s.verdict.toUpperCase()}
-          </span>
-          <span class="scam-time">${formatTime(s.reported_at)}</span>
-        </div>
-        <div class="scam-type">// ${(s.scam_type||'UNKNOWN').toUpperCase()}</div>
-        <div class="scam-preview">"${s.message_preview||'NO PREVIEW'}"</div>
-        ${flags.length?`<div class="scam-flags">${flags.map(f=>`<span class="scam-flag">⚠ ${f}</span>`).join('')}</div>`:''}
-      </div>`;
+      return `<div class="scam-card"><div class="scam-top"><span class="scam-pill" style="background:${bg};color:${color};border:1px solid ${color}44;">SCORE:${s.risk_score} · ${s.verdict.toUpperCase()}</span><span class="scam-time">${formatTime(s.reported_at)}</span></div><div class="scam-type">// ${(s.scam_type||'UNKNOWN').toUpperCase()}</div><div class="scam-preview">"${s.message_preview||'NO PREVIEW'}"</div>${flags.length?`<div class="scam-flags">${flags.map(f=>`<span class="scam-flag">⚠ ${f}</span>`).join('')}</div>`:''}</div>`;
     }).join('');
-  } catch(e) {
-    document.getElementById('scamsList').innerHTML = '<div class="empty-state">CONNECTION FAILED — RETRY IN 30 SECONDS</div>';
-  }
+  } catch(e) { document.getElementById('scamsList').innerHTML = '<div class="empty-state">CONNECTION FAILED — RETRY IN 30 SECONDS</div>'; }
 }
 
 // ── Live feed ──────────────────────────────────────────────────────────────
@@ -1003,36 +738,138 @@ async function loadLiveFeed() {
     updateGauge(data);
     document.getElementById('liveFeed').innerHTML = data.slice(0,6).map(s => {
       const color = s.risk_score>=70?'var(--danger)':s.risk_score>=40?'var(--warn)':'var(--accent)';
-      return `<div class="feed-item">
-        <div class="feed-dot" style="background:${color};box-shadow:0 0 4px ${color};"></div>
-        <div class="feed-content">
-          <div class="feed-title" style="color:${color};">SCORE:${s.risk_score} · ${(s.scam_type||'UNKNOWN').toUpperCase().replace(/ /g,'_')}</div>
-          <div class="feed-meta">${formatTime(s.reported_at)}</div>
-        </div>
-      </div>`;
+      return `<div class="feed-item"><div class="feed-dot" style="background:${color};box-shadow:0 0 4px ${color};"></div><div class="feed-content"><div class="feed-title" style="color:${color};">SCORE:${s.risk_score} · ${(s.scam_type||'UNKNOWN').toUpperCase().replace(/ /g,'_')}</div><div class="feed-meta">${formatTime(s.reported_at)}</div></div></div>`;
     }).join('');
   } catch(e) { document.getElementById('liveFeed').innerHTML = '<div class="feed-empty">SIGNAL LOST...</div>'; }
 }
 
-// ── Gauge ──────────────────────────────────────────────────────────────────
 function updateGauge(data) {
   if (!data.length) return;
   const avg = Math.round(data.reduce((a,b)=>a+b.risk_score,0)/data.length);
-  const path = document.getElementById('gaugePath');
-  const val = document.getElementById('gaugeValue');
   const color = avg>=70?'#ff3030':avg>=40?'#ffaa00':'#00ff41';
+  const path = document.getElementById('gaugePath');
   path.style.stroke = color;
   path.style.filter = `drop-shadow(0 0 8px ${color}80)`;
   path.style.strokeDashoffset = 173 - (avg/100)*173;
-  val.style.color = color;
-  val.textContent = avg + '.00 / 100';
+  document.getElementById('gaugeValue').style.color = color;
+  document.getElementById('gaugeValue').textContent = avg + '.00 / 100';
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────────
+let chatWindowOpen = false;
+let chatLoaded = { float: false, full: false };
+
+function toggleChatWindow() {
+  chatWindowOpen = !chatWindowOpen;
+  document.getElementById('chatWindow').classList.toggle('open', chatWindowOpen);
+  document.getElementById('unreadDot').classList.remove('show');
+  if (chatWindowOpen && !chatLoaded.float) {
+    loadChatHistory('float');
+    chatLoaded.float = true;
+  }
+}
+
+async function loadChatHistory(mode = 'full') {
+  const messagesEl = document.getElementById(mode === 'float' ? 'floatChatMessages' : 'fullChatMessages');
+  try {
+    const res = await fetch(`${API}/chat-history/${sessionId}`);
+    const data = await res.json();
+    if (!data || !data.length) return;
+    // Clear empty state
+    messagesEl.innerHTML = '';
+    data.forEach(msg => appendMessage(msg.role, msg.message, mode, false));
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  } catch(e) { /* no history yet */ }
+}
+
+function appendMessage(role, text, mode = 'both', scroll = true) {
+  const ids = mode === 'both' ? ['floatChatMessages', 'fullChatMessages'] :
+              mode === 'float' ? ['floatChatMessages'] : ['fullChatMessages'];
+
+  ids.forEach(id => {
+    const container = document.getElementById(id);
+    // Remove empty state if present
+    const empty = container.querySelector('.chat-empty');
+    if (empty) empty.remove();
+
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    div.innerHTML = `
+      <div class="chat-avatar">${role === 'user' ? 'U' : '🛡'}</div>
+      <div>
+        <div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>
+        <div class="chat-time">${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+      </div>`;
+    container.appendChild(div);
+    if (scroll) container.scrollTop = container.scrollHeight;
+  });
+}
+
+async function sendChat(mode) {
+  const inputId = mode === 'float' ? 'floatChatInput' : 'fullChatInput';
+  const sendBtnId = mode === 'float' ? 'floatSendBtn' : 'fullSendBtn';
+  const typingId = mode === 'float' ? 'floatTyping' : 'fullTyping';
+  const input = document.getElementById(inputId);
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  appendMessage('user', msg, mode);
+
+  document.getElementById(sendBtnId).disabled = true;
+  document.getElementById(typingId).classList.add('show');
+
+  // Also sync to other panel
+  const otherMode = mode === 'float' ? 'full' : 'float';
+  appendMessage('user', msg, otherMode, false);
+
+  try {
+    const res = await fetch(`${API}/chat`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({session_id: sessionId, message: msg})
+    });
+    const data = await res.json();
+    document.getElementById(typingId).classList.remove('show');
+    appendMessage('assistant', data.reply, 'both');
+
+    // Show unread dot on fab if window is closed
+    if (!chatWindowOpen && mode === 'full') {
+      document.getElementById('unreadDot').classList.add('show');
+    }
+  } catch(e) {
+    document.getElementById(typingId).classList.remove('show');
+    appendMessage('assistant', 'CONNECTION_ERROR — Please try again.', mode);
+  } finally {
+    document.getElementById(sendBtnId).disabled = false;
+  }
+}
+
+function handleChatKey(e, mode) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(mode); }
+}
+
+function sendSuggestion(el, mode = 'full') {
+  const text = el.textContent;
+  const inputId = mode === 'float' ? 'floatChatInput' : 'fullChatInput';
+  document.getElementById(inputId).value = text;
+  sendChat(mode);
+}
+
+async function clearChat() {
+  sessionId = 'ss_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('ss_chat_session', sessionId);
+  const fullChat = document.getElementById('fullChatMessages');
+  const floatChat = document.getElementById('floatChatMessages');
+  const emptyHTML = `<div class="chat-empty"><div class="chat-empty-icon">🛡</div><div class="chat-empty-title">SCAMSHIELD ASSISTANT</div><div class="chat-empty-sub">Chat history cleared. Ask me anything about job scams.</div></div>`;
+  fullChat.innerHTML = emptyHTML;
+  floatChat.innerHTML = emptyHTML;
+  chatLoaded = { float: false, full: false };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function animateNum(id, target, color) {
   const el = document.getElementById(id);
-  el.style.color = color;
-  el.style.textShadow = `0 0 10px ${color}80`;
+  el.style.color = color; el.style.textShadow = `0 0 10px ${color}80`;
   let c = 0; const step = Math.ceil(target/40);
   const t = setInterval(()=>{ c=Math.min(c+step,target); el.textContent=c; if(c>=target) clearInterval(t); },20);
 }
