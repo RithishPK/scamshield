@@ -11,6 +11,7 @@ import json
 import re
 import io
 import httpx
+import uuid
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -42,6 +43,10 @@ class ReportRequest(BaseModel):
     risk_score: int
     verdict: str
     red_flags: str
+
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str
 
 # ── prompts ──────────────────────────────────────────────────────────────────
 SYSTEM_PROMPT = """You are a scam detection expert specializing in fake job messages circulated on WhatsApp and Telegram in India.
@@ -84,28 +89,38 @@ Message: "Hi, we found your resume on Naukri. We have openings for data entry wo
 {"risk_score": 48, "verdict": "Suspicious", "scam_type": "Work From Home Scam", "red_flags": ["No company name provided", "Vague job description", "Unsolicited contact claiming to have your resume"], "safe_signals": ["No payment mentioned", "Salary is realistic"], "advice": "Ask for the company name, official website, and HR email before proceeding — do not share personal documents yet."}
 """
 
+CHAT_SYSTEM_PROMPT = """You are ScamShield Assistant — an expert on job scams, fraud detection, and employment safety in India.
+
+You ONLY answer questions related to:
+- Job scams and fraud detection
+- How to verify if a job offer is legitimate
+- Specific scam patterns (registration fee, impersonation, WFH scams, etc.)
+- What to do if someone has been scammed
+- How to report scams in India
+- General job search safety tips
+- Explaining risk scores or analysis results from ScamShield
+
+If someone asks about ANYTHING else (coding, general knowledge, entertainment, math, etc.), respond with:
+"I'm ScamShield Assistant — I can only help with job scam detection and employment fraud questions. Please ask me something related to that topic."
+
+Always be helpful, clear, and provide actionable advice. Use simple language that a non-technical person can understand.
+When relevant, mention cybercrime.gov.in and helpline 1930 for reporting scams in India."""
+
 # ── demo fallback cache ───────────────────────────────────────────────────────
 DEMO_CACHE = {
     "scam": {
-        "risk_score": 94,
-        "verdict": "Likely Scam",
-        "scam_type": "Registration Fee Scam",
+        "risk_score": 94, "verdict": "Likely Scam", "scam_type": "Registration Fee Scam",
         "red_flags": ["Upfront registration fee demanded", "Unrealistic income promise", "No company name or website", "Urgency pressure tactic", "Personal WhatsApp number only"],
-        "safe_signals": [],
-        "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates.",
+        "safe_signals": [], "advice": "Never pay any fee to get a job — legitimate employers do not charge candidates.",
     },
     "suspicious": {
-        "risk_score": 52,
-        "verdict": "Suspicious",
-        "scam_type": "Work From Home Scam",
+        "risk_score": 52, "verdict": "Suspicious", "scam_type": "Work From Home Scam",
         "red_flags": ["No company name provided", "Vague job description", "Unsolicited contact"],
         "safe_signals": ["No payment mentioned", "Salary is realistic"],
         "advice": "Ask for the company name and official website before sharing any personal details.",
     },
     "safe": {
-        "risk_score": 12,
-        "verdict": "Safe",
-        "scam_type": None,
+        "risk_score": 12, "verdict": "Safe", "scam_type": None,
         "red_flags": [],
         "safe_signals": ["Official company email domain used", "Specific office location provided", "No payment requested", "Interview process mentioned"],
         "advice": "This message appears legitimate. Verify by calling the company directly using their official website number.",
@@ -115,18 +130,27 @@ DEMO_CACHE = {
 SCAM_KEYWORDS = ["fee", "register", "registration", "pay", "payment", "deposit", "guaranteed", "ghar baithe", "घर बैठे", "premium", "urgent", "limited seats", "apply now", "call now", "whatsapp now", "no interview", "no experience", "earn daily", "part time earn"]
 SAFE_KEYWORDS = ["interview", "office", "hr@", ".com email", "bring resume", "shortlisted", "scheduled", "department", "joining date"]
 
-
 def fallback_response(message: str) -> dict:
     msg = message.lower()
     scam_hits = sum(1 for k in SCAM_KEYWORDS if k in msg)
     safe_hits = sum(1 for k in SAFE_KEYWORDS if k in msg)
-    if scam_hits >= 2:
-        return DEMO_CACHE["scam"]
-    elif safe_hits >= 2:
-        return DEMO_CACHE["safe"]
-    else:
-        return DEMO_CACHE["suspicious"]
+    if scam_hits >= 2: return DEMO_CACHE["scam"]
+    elif safe_hits >= 2: return DEMO_CACHE["safe"]
+    else: return DEMO_CACHE["suspicious"]
 
+# ── OCR helper ────────────────────────────────────────────────────────────────
+def extract_text_from_image_bytes(image_bytes: bytes) -> str:
+    try:
+        import pytesseract
+        from PIL import Image
+        img = Image.open(io.BytesIO(image_bytes))
+        # Convert to RGB if needed
+        if img.mode not in ('RGB', 'L'):
+            img = img.convert('RGB')
+        text = pytesseract.image_to_string(img, lang='eng')
+        return text.strip()
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"OCR failed: {str(e)}")
 
 # ── core analysis ─────────────────────────────────────────────────────────────
 async def run_analysis(message: str) -> dict:
@@ -144,7 +168,6 @@ Return exactly this JSON structure:
   "safe_signals": ["<signal1>"],
   "advice": "<one actionable sentence for the user>"
 }}"""
-
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -152,8 +175,7 @@ Return exactly this JSON structure:
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_content},
             ],
-            temperature=0.1,
-            timeout=10,
+            temperature=0.1, timeout=10,
         )
         text = response.choices[0].message.content.strip()
         text = re.sub(r"```json|```", "", text).strip()
@@ -162,9 +184,7 @@ Return exactly this JSON structure:
         print(f"[FALLBACK TRIGGERED] Reason: {e}")
         return fallback_response(message)
 
-
 MIN_MESSAGE_LENGTH = 10
-
 
 # ── endpoint 1: text analysis ─────────────────────────────────────────────────
 @app.post("/analyze")
@@ -177,19 +197,26 @@ async def analyze_message(request: Request, req: MessageRequest):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.")
     return await run_analysis(message)
 
-
-# ── endpoint 2: file upload analysis ─────────────────────────────────────────
+# ── endpoint 2: file upload analysis (PDF + DOCX + TXT + Images) ─────────────
 @app.post("/analyze-file")
 @limiter.limit("5/minute")
 async def analyze_file(request: Request, file: UploadFile = File(...)):
-    allowed_types = ["application/pdf", "text/plain"]
-    if file.content_type not in allowed_types:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type. Please upload a PDF or .txt file.")
+    allowed_types = [
+        "application/pdf",
+        "text/plain",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"
+    ]
+    content_type = file.content_type or ""
+    if not any(ct in content_type for ct in allowed_types):
+        raise HTTPException(status_code=400, detail="Unsupported file type. Upload PDF, DOCX, TXT, or image (JPG/PNG/WEBP).")
 
     contents = await file.read()
     extracted_text = ""
 
-    if file.content_type == "application/pdf":
+    # ── PDF ──
+    if "pdf" in content_type:
         try:
             import pdfplumber
             with pdfplumber.open(io.BytesIO(contents)) as pdf:
@@ -197,19 +224,51 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
                     page_text = page.extract_text()
                     if page_text:
                         extracted_text += page_text + "\n"
+
+            # If PDF has no extractable text, use OCR on page images
+            if not extracted_text.strip():
+                try:
+                    from pdf2image import convert_from_bytes
+                    images = convert_from_bytes(contents, dpi=200)
+                    for img in images:
+                        import pytesseract
+                        page_text = pytesseract.image_to_string(img, lang='eng')
+                        if page_text:
+                            extracted_text += page_text + "\n"
+                except Exception as ocr_e:
+                    raise HTTPException(status_code=422, detail=f"PDF appears image-based and OCR failed: {str(ocr_e)}")
+        except HTTPException:
+            raise
         except Exception as e:
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Could not extract text from PDF: {str(e)}")
-    elif file.content_type == "text/plain":
+            raise HTTPException(status_code=422, detail=f"Could not process PDF: {str(e)}")
+
+    # ── DOCX ──
+    elif "wordprocessingml" in content_type or "msword" in content_type:
+        try:
+            from docx import Document as DocxDocument
+            doc = DocxDocument(io.BytesIO(contents))
+            extracted_text = "\n".join([para.text for para in doc.paragraphs if para.text.strip()])
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Could not read Word document: {str(e)}")
+
+    # ── Plain text ──
+    elif "text/plain" in content_type:
         try:
             extracted_text = contents.decode("utf-8")
         except UnicodeDecodeError:
             extracted_text = contents.decode("latin-1")
 
+    # ── Images (JPG, PNG, WEBP, etc.) ──
+    elif any(img_type in content_type for img_type in ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"]):
+        extracted_text = extract_text_from_image_bytes(contents)
+        if not extracted_text:
+            raise HTTPException(status_code=422, detail="No text found in image. Make sure the image contains readable text.")
+
     extracted_text = extracted_text.strip()
     if not extracted_text:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="No text could be extracted. The file may be empty or image-based.")
+        raise HTTPException(status_code=422, detail="No text could be extracted. The file may be empty or unreadable.")
     if len(extracted_text) < MIN_MESSAGE_LENGTH:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Extracted text is too short to analyze.")
+        raise HTTPException(status_code=400, detail="Extracted text is too short to analyze.")
     if len(extracted_text) > 3000:
         extracted_text = extracted_text[:3000] + "..."
 
@@ -217,7 +276,6 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
     result["extracted_preview"] = extracted_text[:300] + ("..." if len(extracted_text) > 300 else "")
     result["source"] = f"Extracted from: {file.filename}"
     return result
-
 
 # ── endpoint 3: report a scam ─────────────────────────────────────────────────
 @app.post("/report-scam")
@@ -229,19 +287,8 @@ async def report_scam(request: Request, req: ReportRequest):
         async with httpx.AsyncClient() as client_http:
             response = await client_http.post(
                 f"{SUPABASE_URL}/rest/v1/scam_reports",
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                },
-                json={
-                    "message_preview": req.message_preview[:200],
-                    "scam_type": req.scam_type,
-                    "risk_score": req.risk_score,
-                    "verdict": req.verdict,
-                    "red_flags": req.red_flags,
-                }
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "return=minimal"},
+                json={"message_preview": req.message_preview[:200], "scam_type": req.scam_type, "risk_score": req.risk_score, "verdict": req.verdict, "red_flags": req.red_flags}
             )
         if response.status_code in [200, 201]:
             return {"success": True, "message": "Scam reported successfully. Thank you for helping others!"}
@@ -249,7 +296,6 @@ async def report_scam(request: Request, req: ReportRequest):
             raise HTTPException(status_code=500, detail="Failed to save report.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
-
 
 # ── endpoint 4: get recent scam reports ───────────────────────────────────────
 @app.get("/recent-scams")
@@ -261,23 +307,90 @@ async def get_recent_scams(request: Request):
         async with httpx.AsyncClient() as client_http:
             response = await client_http.get(
                 f"{SUPABASE_URL}/rest/v1/scam_reports",
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                },
-                params={
-                    "select": "id,message_preview,scam_type,risk_score,verdict,red_flags,reported_at",
-                    "order": "reported_at.desc",
-                    "limit": "20"
-                }
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                params={"select": "id,message_preview,scam_type,risk_score,verdict,red_flags,reported_at", "order": "reported_at.desc", "limit": "20"}
             )
         return response.json()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
+# ── endpoint 5: chat message ──────────────────────────────────────────────────
+@app.post("/chat")
+@limiter.limit("20/minute")
+async def chat(request: Request, req: ChatRequest):
+    if not req.session_id or not req.message.strip():
+        raise HTTPException(status_code=400, detail="session_id and message are required.")
+
+    # Fetch last 10 messages for context
+    history = []
+    if SUPABASE_URL and SUPABASE_KEY:
+        try:
+            async with httpx.AsyncClient() as client_http:
+                resp = await client_http.get(
+                    f"{SUPABASE_URL}/rest/v1/chat_history",
+                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                    params={"select": "role,message,created_at", "session_id": f"eq.{req.session_id}", "order": "created_at.asc", "limit": "10"}
+                )
+            history = resp.json() if resp.status_code == 200 else []
+        except:
+            history = []
+
+    # Build messages for LLM
+    messages = [{"role": "system", "content": CHAT_SYSTEM_PROMPT}]
+    for h in history:
+        messages.append({"role": h["role"], "content": h["message"]})
+    messages.append({"role": "user", "content": req.message})
+
+    # Call LLM
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.3,
+            timeout=15,
+            max_tokens=800,
+        )
+        reply = response.choices[0].message.content.strip()
+    except Exception as e:
+        reply = "I'm having trouble connecting right now. Please try again in a moment."
+
+    # Save both messages to Supabase
+    if SUPABASE_URL and SUPABASE_KEY:
+        try:
+            async with httpx.AsyncClient() as client_http:
+                await client_http.post(
+                    f"{SUPABASE_URL}/rest/v1/chat_history",
+                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "return=minimal"},
+                    json={"session_id": req.session_id, "role": "user", "message": req.message}
+                )
+                await client_http.post(
+                    f"{SUPABASE_URL}/rest/v1/chat_history",
+                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Content-Type": "application/json", "Prefer": "return=minimal"},
+                    json={"session_id": req.session_id, "role": "assistant", "message": reply}
+                )
+        except:
+            pass
+
+    return {"reply": reply, "session_id": req.session_id}
+
+# ── endpoint 6: get chat history ──────────────────────────────────────────────
+@app.get("/chat-history/{session_id}")
+@limiter.limit("30/minute")
+async def get_chat_history(request: Request, session_id: str):
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return []
+    try:
+        async with httpx.AsyncClient() as client_http:
+            resp = await client_http.get(
+                f"{SUPABASE_URL}/rest/v1/chat_history",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                params={"select": "role,message,created_at", "session_id": f"eq.{session_id}", "order": "created_at.asc", "limit": "50"}
+            )
+        return resp.json() if resp.status_code == 200 else []
+    except:
+        return []
 
 # ── health check ─────────────────────────────────────────────────────────────
 @app.get("/")
 async def root():
-    return {"status": "ScamShield API is running"}
-# ----json---
+    return {"status": "ScamShield API is running", "version": "3.0"}
