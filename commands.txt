@@ -1,1 +1,3 @@
 
+cd C:\Users\rithi\scam-detector>cd C:\Users\rithi\scam-detector
+cd C:\Users\rithi\scam-detector>venv\Scripts\activate

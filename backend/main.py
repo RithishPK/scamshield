@@ -10,8 +10,8 @@ import os
 import json
 import re
 import io
+import base64
 import httpx
-import threading
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -33,19 +33,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Preload easyocr at startup ────────────────────────────────────────────────
-ocr_reader = None
+# ── OCR config (cloud vision, no local model download) ────────────────────────
+# EasyOCR was removed: it downloads ~100MB of weights into $HOME/.EasyOCR at
+# runtime, which fails on Render's ephemeral/read-only-ish filesystem
+# ("No such file or directory: /opt/render/.EasyOCR//model/temp.zip") and would
+# OOM the 512MB free instance anyway once torch loads.
+VISION_MODELS = [
+    os.getenv("GROQ_VISION_MODEL", "qwen/qwen3.6-27b"),
+    "meta-llama/llama-4-scout-17b-16e-instruct",
+    "meta-llama/llama-4-maverick-17b-128e-instruct",
+]
 
-def preload_ocr():
-    try:
-        import easyocr
-        global ocr_reader
-        ocr_reader = easyocr.Reader(['en'], gpu=False)
-        print("[OCR] EasyOCR model loaded successfully")
-    except Exception as e:
-        print(f"[OCR] Preload failed: {e}")
+OCR_PROMPT = (
+    "Transcribe ALL text visible in this image, exactly as written. "
+    "Include sender names, phone numbers, links, amounts, dates and button labels. "
+    "Do not summarise, translate, explain or add any commentary. "
+    "Output only the transcribed text. "
+    "If the image contains no readable text, output exactly: NO_TEXT_FOUND"
+)
 
-threading.Thread(target=preload_ocr, daemon=True).start()
+MAX_UPLOAD_BYTES = 8 * 1024 * 1024   # 8MB hard cap on uploads
+MAX_IMAGE_SIDE = 1600                # downscale before sending to the model
 
 # ── request models ────────────────────────────────────────────────────────────
 class MessageRequest(BaseModel):
@@ -152,24 +160,83 @@ def fallback_response(message: str) -> dict:
     elif safe_hits >= 2: return DEMO_CACHE["safe"]
     else: return DEMO_CACHE["suspicious"]
 
-# ── OCR helper ────────────────────────────────────────────────────────────────
+# ── OCR helpers ───────────────────────────────────────────────────────────────
+def _to_jpeg_data_url(image_bytes: bytes) -> str:
+    """Normalise + downscale any image to a small JPEG data URL."""
+    from PIL import Image, ImageOps
+    img = Image.open(io.BytesIO(image_bytes))
+    img = ImageOps.exif_transpose(img)          # fixes sideways phone screenshots
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+    if max(img.size) > MAX_IMAGE_SIDE:
+        ratio = MAX_IMAGE_SIDE / max(img.size)
+        img = img.resize((int(img.width * ratio), int(img.height * ratio)), Image.LANCZOS)
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=85, optimize=True)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
+def _clean_vision_output(text: str) -> str:
+    """Strip reasoning tags / markdown fences some models emit."""
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+    text = re.sub(r"```[a-zA-Z]*|```", "", text)
+    return text.strip()
+
+
+def _vision_transcribe(data_url: str) -> str:
+    """Send one image to Groq vision, trying each model until one answers."""
+    last_error = None
+    for model_id in VISION_MODELS:
+        try:
+            resp = client.chat.completions.create(
+                model=model_id,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": OCR_PROMPT},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                }],
+                temperature=0,
+                max_completion_tokens=1024,
+                timeout=45,
+            )
+            text = _clean_vision_output(resp.choices[0].message.content or "")
+            if "NO_TEXT_FOUND" in text.upper():
+                return ""
+            print(f"[OCR] transcribed via {model_id} ({len(text)} chars)")
+            return text
+        except Exception as e:
+            last_error = e
+            print(f"[OCR] model {model_id} failed: {e}")
+            continue
+    raise HTTPException(
+        status_code=503,
+        detail=f"Image reading is temporarily unavailable. Please paste the text instead. ({last_error})"
+    )
+
+
 def extract_text_from_image_bytes(image_bytes: bytes) -> str:
+    if not image_bytes:
+        raise HTTPException(status_code=422, detail="The uploaded image is empty.")
     try:
-        import numpy as np
-        from PIL import Image
-        global ocr_reader
-        if ocr_reader is None:
-            import easyocr
-            ocr_reader = easyocr.Reader(['en'], gpu=False)
-        img = Image.open(io.BytesIO(image_bytes))
-        if img.mode not in ('RGB', 'L'):
-            img = img.convert('RGB')
-        img_array = np.array(img)
-        results = ocr_reader.readtext(img_array)
-        text = ' '.join([result[1] for result in results])
-        return text.strip()
+        data_url = _to_jpeg_data_url(image_bytes)
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"OCR failed: {str(e)}")
+        raise HTTPException(status_code=422, detail=f"That file isn't a readable image: {e}")
+    return _vision_transcribe(data_url)
+
+
+def _pdf_pages_to_jpegs(pdf_bytes: bytes, max_pages: int = 3) -> list[str]:
+    """Render PDF pages to JPEG data URLs using pypdfium2 (no poppler needed)."""
+    import pypdfium2 as pdfium
+    pdf = pdfium.PdfDocument(pdf_bytes)
+    urls = []
+    for i in range(min(len(pdf), max_pages)):
+        pil = pdf[i].render(scale=2).to_pil()
+        buf = io.BytesIO()
+        pil.convert("RGB").save(buf, format="JPEG", quality=85, optimize=True)
+        urls.append(_to_jpeg_data_url(buf.getvalue()))
+    return urls
 
 # ── core analysis ─────────────────────────────────────────────────────────────
 async def run_analysis(message: str) -> dict:
@@ -248,6 +315,8 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="Unsupported file type. Upload PDF, DOCX, TXT, or image (JPG/PNG/WEBP).")
 
     contents = await file.read()
+    if len(contents) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File too large. Please upload a file under 8MB.")
     extracted_text = ""
 
     # ── PDF ──
@@ -260,24 +329,17 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
                     if page_text:
                         extracted_text += page_text + "\n"
 
-            # If no text extracted, try OCR on page images
+            # If no embedded text, the PDF is a scan — render pages and read them
             if not extracted_text.strip():
                 try:
-                    from pdf2image import convert_from_bytes
-                    import numpy as np
-                    global ocr_reader
-                    if ocr_reader is None:
-                        import easyocr
-                        ocr_reader = easyocr.Reader(['en'], gpu=False)
-                    images = convert_from_bytes(contents, dpi=150)
-                    for img in images:
-                        img_array = np.array(img)
-                        results = ocr_reader.readtext(img_array)
-                        page_text = ' '.join([r[1] for r in results])
+                    for data_url in _pdf_pages_to_jpegs(contents, max_pages=3):
+                        page_text = _vision_transcribe(data_url)
                         if page_text:
                             extracted_text += page_text + "\n"
+                except HTTPException:
+                    raise
                 except Exception as ocr_e:
-                    raise HTTPException(status_code=422, detail=f"PDF appears image-based and OCR failed: {str(ocr_e)}")
+                    raise HTTPException(status_code=422, detail=f"PDF appears image-based and could not be read: {str(ocr_e)}")
         except HTTPException:
             raise
         except Exception as e:
@@ -430,4 +492,9 @@ async def get_chat_history(request: Request, session_id: str):
 # ── health check ─────────────────────────────────────────────────────────────
 @app.get("/")
 async def root():
-    return {"status": "ScamShield API is running", "version": "3.0", "ocr": "ready" if ocr_reader else "loading"}
+    return {
+        "status": "ScamShield API is running",
+        "version": "3.1",
+        "ocr": "groq-vision",
+        "ocr_model": VISION_MODELS[0],
+    }
