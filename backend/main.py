@@ -329,17 +329,25 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
                     if page_text:
                         extracted_text += page_text + "\n"
 
-            # If no embedded text, the PDF is a scan — render pages and read them
-            if not extracted_text.strip():
+            # A PDF can carry a thin text layer (a heading, a watermark) while the
+            # real content is scanned screenshots. Empty-check alone misses those,
+            # so OCR whenever the text density per page is too low to be real.
+            MIN_CHARS_PER_PAGE = 120
+            page_count = max(len(pdfplumber.open(io.BytesIO(contents)).pages), 1)
+            if len(extracted_text.strip()) < MIN_CHARS_PER_PAGE * page_count:
                 try:
-                    for data_url in _pdf_pages_to_jpegs(contents, max_pages=3):
+                    ocr_text = ""
+                    for data_url in _pdf_pages_to_jpegs(contents, max_pages=5):
                         page_text = _vision_transcribe(data_url)
                         if page_text:
-                            extracted_text += page_text + "\n"
+                            ocr_text += page_text + "\n"
+                    if ocr_text.strip():
+                        extracted_text = (extracted_text + "\n" + ocr_text).strip()
                 except HTTPException:
                     raise
                 except Exception as ocr_e:
-                    raise HTTPException(status_code=422, detail=f"PDF appears image-based and could not be read: {str(ocr_e)}")
+                    if not extracted_text.strip():
+                        raise HTTPException(status_code=422, detail=f"This PDF appears image-based and could not be read: {str(ocr_e)}")
         except HTTPException:
             raise
         except Exception as e:
@@ -494,7 +502,7 @@ async def get_chat_history(request: Request, session_id: str):
 async def root():
     return {
         "status": "ScamShield API is running",
-        "version": "3.1",
+        "version": "3.2",
         "ocr": "groq-vision",
         "ocr_model": VISION_MODELS[0],
     }
