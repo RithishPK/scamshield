@@ -212,7 +212,20 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
         "image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"
     ]
     content_type = file.content_type or ""
-    if not any(ct in content_type for ct in allowed_types):
+    filename = file.filename or ""
+    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+
+    # Also detect by file extension as fallback
+    image_exts = {'jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'tif'}
+    doc_exts = {'pdf': 'application/pdf', 'txt': 'text/plain', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'doc': 'application/msword'}
+
+    if not content_type or content_type == 'application/octet-stream':
+        if ext in image_exts:
+            content_type = f'image/{ext}'
+    elif ext in doc_exts:
+        content_type = doc_exts[ext]
+
+    if not any(ct in content_type for ct in allowed_types) and ext not in image_exts and ext not in doc_exts:
         raise HTTPException(status_code=400, detail="Unsupported file type. Upload PDF, DOCX, TXT, or image (JPG/PNG/WEBP).")
 
     contents = await file.read()
@@ -266,7 +279,7 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
             extracted_text = contents.decode("latin-1")
 
     # ── Images (JPG, PNG, WEBP, etc.) ──
-    elif any(img_type in content_type for img_type in ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"]):
+    elif any(img_type in content_type for img_type in ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"]) or ext in image_exts:
         extracted_text = extract_text_from_image_bytes(contents)
         if not extracted_text:
             raise HTTPException(status_code=422, detail="No text found in image. Make sure the image contains readable text.")
