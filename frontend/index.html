@@ -309,7 +309,7 @@
   <div class="brand">
     <div class="brand-logo">🛡</div>
     <div>
-      <div class="brand-name">SCAMSHIELD.OS<span>THREAT ANALYSIS SYSTEM v3.0</span></div>
+      <div class="brand-name">SCAMSHIELD.OS<span>THREAT ANALYSIS SYSTEM</span></div>
     </div>
   </div>
   <div class="topbar-right">
@@ -332,7 +332,7 @@
     <button class="nav-item" onclick="showPage('chat',this);loadChatHistory()"><span class="nav-icon">💬</span>AI_ASSISTANT</button>
     <button class="nav-item" onclick="showPage('kb',this)"><span class="nav-icon">◉</span>KNOWLEDGE_HUB</button>
     <div class="sidebar-footer">
-      KERNEL: v3.0.0<br>ENGINE: LLAMA-3.3<br>DB: SUPABASE<br>OCR: TESSERACT<br>STATUS: <span style="color:var(--accent)">ONLINE ●</span>
+      SESSION: ACTIVE<br>SCANS_RUN: <span id="sidebarScans" style="color:var(--muted2)">0</span><br>MODE: REAL_TIME<br>STATUS: <span style="color:var(--accent)">ONLINE ●</span>
     </div>
   </aside>
 
@@ -427,7 +427,7 @@
       <div class="page-header">
         <div class="page-eyebrow">// AI_INTEL</div>
         <div class="page-title">AI_ASSISTANT</div>
-        <div class="page-sub">JOB SCAM DETECTION EXPERT · POWERED BY LLAMA 3.3 70B</div>
+        <div class="page-sub">JOB SCAM DETECTION EXPERT · ASK ABOUT FAKE OFFERS AND EMPLOYMENT FRAUD</div>
       </div>
       <div class="chat-full-header">
         <div style="font-size:0.68rem;color:var(--muted);">// Ask anything about job scams, fraud detection, or employment safety</div>
@@ -472,12 +472,12 @@
 
   <!-- Right Panel -->
   <aside class="right-panel">
-    <div class="rp-title">SYSTEM_HARDWARE</div>
+    <div class="rp-title">SESSION_METRICS</div>
     <div class="mini-grid">
-      <div class="mini-stat"><div class="mini-num" style="color:var(--accent)">LLM</div><div class="mini-label">LLAMA_70B</div></div>
-      <div class="mini-stat"><div class="mini-num" style="color:var(--warn)">API</div><div class="mini-label">FAST_V3</div></div>
-      <div class="mini-stat"><div class="mini-num" style="color:var(--danger)">DB</div><div class="mini-label">SUPA_BASE</div></div>
-      <div class="mini-stat"><div class="mini-num" style="color:#a78bfa;">OCR</div><div class="mini-label">TESSERACT</div></div>
+      <div class="mini-stat"><div class="mini-num" id="rpTotal" style="color:var(--accent)">0</div><div class="mini-label">SCANS_RUN</div></div>
+      <div class="mini-stat"><div class="mini-num" id="rpThreats" style="color:var(--danger)">0</div><div class="mini-label">THREATS</div></div>
+      <div class="mini-stat"><div class="mini-num" id="rpSafe" style="color:var(--accent)">0</div><div class="mini-label">CLEARED</div></div>
+      <div class="mini-stat"><div class="mini-num" id="rpReports" style="color:var(--warn)">0</div><div class="mini-label">INTEL_LOGS</div></div>
     </div>
     <div class="rp-title">GLOBAL_THREAT_LEVEL</div>
     <div class="gauge-wrap">
@@ -682,6 +682,19 @@ function saveToHistory(data, preview) {
   scanHistory.unshift({score:data.risk_score,verdict:data.verdict,scam_type:data.scam_type,preview:preview.substring(0,80),time:new Date().toISOString()});
   if (scanHistory.length > 50) scanHistory = scanHistory.slice(0,50);
   localStorage.setItem('ss_history', JSON.stringify(scanHistory));
+  renderSessionMetrics();
+}
+
+// ── Session metrics (sidebar + right panel) ────────────────────────────────
+function renderSessionMetrics() {
+  const total   = scanHistory.length;
+  const threats = scanHistory.filter(s => s.score >= 60).length;
+  const safe    = scanHistory.filter(s => s.score < 40).length;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('rpTotal', total);
+  set('rpThreats', threats);
+  set('rpSafe', safe);
+  set('sidebarScans', total);
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
@@ -689,6 +702,7 @@ function renderDashboard() {
   document.getElementById('stat-total').textContent = scanHistory.length;
   document.getElementById('stat-scams').textContent = scanHistory.filter(s=>s.score>=60).length;
   document.getElementById('stat-safe').textContent = scanHistory.filter(s=>s.score<40).length;
+  renderSessionMetrics();
   const container = document.getElementById('dash-history');
   if (!scanHistory.length) { container.innerHTML = '<div class="empty-state">[ NO SCAN RECORDS ] — RUN ANALYSIS TO POPULATE LOG</div>'; return; }
   container.innerHTML = scanHistory.map(s => {
@@ -734,7 +748,13 @@ async function loadLiveFeed() {
   try {
     const res = await fetch(`${API}/recent-scams`);
     const data = await res.json();
-    if (!data||!data.length) { document.getElementById('liveFeed').innerHTML = '<div class="feed-empty">NO INTEL YET</div>'; updateGauge([]); return; }
+    const reportsEl = document.getElementById('rpReports');
+    if (!data||!data.length) {
+      document.getElementById('liveFeed').innerHTML = '<div class="feed-empty">NO INTEL YET</div>';
+      if (reportsEl) reportsEl.textContent = '0';
+      updateGauge([]); return;
+    }
+    if (reportsEl) reportsEl.textContent = data.length;
     updateGauge(data);
     document.getElementById('liveFeed').innerHTML = data.slice(0,6).map(s => {
       const color = s.risk_score>=70?'var(--danger)':s.risk_score>=40?'var(--warn)':'var(--accent)';
