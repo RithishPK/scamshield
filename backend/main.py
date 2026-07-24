@@ -141,13 +141,16 @@ def fallback_response(message: str) -> dict:
 # ── OCR helper ────────────────────────────────────────────────────────────────
 def extract_text_from_image_bytes(image_bytes: bytes) -> str:
     try:
-        import pytesseract
+        import easyocr
+        import numpy as np
         from PIL import Image
         img = Image.open(io.BytesIO(image_bytes))
-        # Convert to RGB if needed
         if img.mode not in ('RGB', 'L'):
             img = img.convert('RGB')
-        text = pytesseract.image_to_string(img, lang='eng')
+        img_array = np.array(img)
+        reader = easyocr.Reader(['en'], gpu=False)
+        results = reader.readtext(img_array)
+        text = ' '.join([result[1] for result in results])
         return text.strip()
     except Exception as e:
         raise HTTPException(status_code=422, detail=f"OCR failed: {str(e)}")
@@ -228,11 +231,15 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
             # If PDF has no extractable text, use OCR on page images
             if not extracted_text.strip():
                 try:
+                    import easyocr
+                    import numpy as np
+                    reader = easyocr.Reader(['en'], gpu=False)
                     from pdf2image import convert_from_bytes
-                    images = convert_from_bytes(contents, dpi=200)
+                    images = convert_from_bytes(contents, dpi=150)
                     for img in images:
-                        import pytesseract
-                        page_text = pytesseract.image_to_string(img, lang='eng')
+                        img_array = np.array(img)
+                        results = reader.readtext(img_array)
+                        page_text = ' '.join([r[1] for r in results])
                         if page_text:
                             extracted_text += page_text + "\n"
                 except Exception as ocr_e:
