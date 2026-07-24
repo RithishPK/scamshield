@@ -11,7 +11,7 @@ import json
 import re
 import io
 import httpx
-import uuid
+import threading
 
 # ── env + client ────────────────────────────────────────────────────────────
 load_dotenv()
@@ -32,6 +32,20 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Preload easyocr at startup ────────────────────────────────────────────────
+ocr_reader = None
+
+def preload_ocr():
+    try:
+        import easyocr
+        global ocr_reader
+        ocr_reader = easyocr.Reader(['en'], gpu=False)
+        print("[OCR] EasyOCR model loaded successfully")
+    except Exception as e:
+        print(f"[OCR] Preload failed: {e}")
+
+threading.Thread(target=preload_ocr, daemon=True).start()
 
 # ── request models ────────────────────────────────────────────────────────────
 class MessageRequest(BaseModel):
@@ -141,15 +155,17 @@ def fallback_response(message: str) -> dict:
 # ── OCR helper ────────────────────────────────────────────────────────────────
 def extract_text_from_image_bytes(image_bytes: bytes) -> str:
     try:
-        import easyocr
         import numpy as np
         from PIL import Image
+        global ocr_reader
+        if ocr_reader is None:
+            import easyocr
+            ocr_reader = easyocr.Reader(['en'], gpu=False)
         img = Image.open(io.BytesIO(image_bytes))
         if img.mode not in ('RGB', 'L'):
             img = img.convert('RGB')
         img_array = np.array(img)
-        reader = easyocr.Reader(['en'], gpu=False)
-        results = reader.readtext(img_array)
+        results = ocr_reader.readtext(img_array)
         text = ' '.join([result[1] for result in results])
         return text.strip()
     except Exception as e:
@@ -189,6 +205,15 @@ Return exactly this JSON structure:
 
 MIN_MESSAGE_LENGTH = 10
 
+# ── File type helpers ─────────────────────────────────────────────────────────
+IMAGE_EXTS = {'jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'tif'}
+DOC_EXTS = {
+    'pdf': 'application/pdf',
+    'txt': 'text/plain',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'doc': 'application/msword'
+}
+
 # ── endpoint 1: text analysis ─────────────────────────────────────────────────
 @app.post("/analyze")
 @limiter.limit("10/minute")
@@ -200,39 +225,33 @@ async def analyze_message(request: Request, req: MessageRequest):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Message is too short. Please provide at least {MIN_MESSAGE_LENGTH} characters.")
     return await run_analysis(message)
 
-# ── endpoint 2: file upload analysis (PDF + DOCX + TXT + Images) ─────────────
+# ── endpoint 2: file upload (PDF + DOCX + TXT + Images) ──────────────────────
 @app.post("/analyze-file")
 @limiter.limit("5/minute")
 async def analyze_file(request: Request, file: UploadFile = File(...)):
-    allowed_types = [
-        "application/pdf",
-        "text/plain",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/msword",
-        "image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"
-    ]
     content_type = file.content_type or ""
     filename = file.filename or ""
-    ext = filename.lower().split('.')[-1] if '.' in filename else ''
+    ext = filename.lower().rsplit('.', 1)[-1] if '.' in filename else ''
 
-    # Also detect by file extension as fallback
-    image_exts = {'jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff', 'tif'}
-    doc_exts = {'pdf': 'application/pdf', 'txt': 'text/plain', 'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'doc': 'application/msword'}
-
+    # Detect content type by extension if browser sends octet-stream
     if not content_type or content_type == 'application/octet-stream':
-        if ext in image_exts:
+        if ext in IMAGE_EXTS:
             content_type = f'image/{ext}'
-    elif ext in doc_exts:
-        content_type = doc_exts[ext]
+        elif ext in DOC_EXTS:
+            content_type = DOC_EXTS[ext]
 
-    if not any(ct in content_type for ct in allowed_types) and ext not in image_exts and ext not in doc_exts:
+    allowed = ["application/pdf", "text/plain",
+               "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+               "application/msword", "image/"]
+
+    if not any(a in content_type for a in allowed) and ext not in IMAGE_EXTS and ext not in DOC_EXTS:
         raise HTTPException(status_code=400, detail="Unsupported file type. Upload PDF, DOCX, TXT, or image (JPG/PNG/WEBP).")
 
     contents = await file.read()
     extracted_text = ""
 
     # ── PDF ──
-    if "pdf" in content_type:
+    if "pdf" in content_type or ext == 'pdf':
         try:
             import pdfplumber
             with pdfplumber.open(io.BytesIO(contents)) as pdf:
@@ -241,17 +260,19 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
                     if page_text:
                         extracted_text += page_text + "\n"
 
-            # If PDF has no extractable text, use OCR on page images
+            # If no text extracted, try OCR on page images
             if not extracted_text.strip():
                 try:
-                    import easyocr
-                    import numpy as np
-                    reader = easyocr.Reader(['en'], gpu=False)
                     from pdf2image import convert_from_bytes
+                    import numpy as np
+                    global ocr_reader
+                    if ocr_reader is None:
+                        import easyocr
+                        ocr_reader = easyocr.Reader(['en'], gpu=False)
                     images = convert_from_bytes(contents, dpi=150)
                     for img in images:
                         img_array = np.array(img)
-                        results = reader.readtext(img_array)
+                        results = ocr_reader.readtext(img_array)
                         page_text = ' '.join([r[1] for r in results])
                         if page_text:
                             extracted_text += page_text + "\n"
@@ -263,7 +284,7 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
             raise HTTPException(status_code=422, detail=f"Could not process PDF: {str(e)}")
 
     # ── DOCX ──
-    elif "wordprocessingml" in content_type or "msword" in content_type:
+    elif "wordprocessingml" in content_type or "msword" in content_type or ext in ('docx', 'doc'):
         try:
             from docx import Document as DocxDocument
             doc = DocxDocument(io.BytesIO(contents))
@@ -272,14 +293,14 @@ async def analyze_file(request: Request, file: UploadFile = File(...)):
             raise HTTPException(status_code=422, detail=f"Could not read Word document: {str(e)}")
 
     # ── Plain text ──
-    elif "text/plain" in content_type:
+    elif "text/plain" in content_type or ext == 'txt':
         try:
             extracted_text = contents.decode("utf-8")
         except UnicodeDecodeError:
             extracted_text = contents.decode("latin-1")
 
-    # ── Images (JPG, PNG, WEBP, etc.) ──
-    elif any(img_type in content_type for img_type in ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp", "image/tiff"]) or ext in image_exts:
+    # ── Images ──
+    elif "image/" in content_type or ext in IMAGE_EXTS:
         extracted_text = extract_text_from_image_bytes(contents)
         if not extracted_text:
             raise HTTPException(status_code=422, detail="No text found in image. Make sure the image contains readable text.")
@@ -334,14 +355,13 @@ async def get_recent_scams(request: Request):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-# ── endpoint 5: chat message ──────────────────────────────────────────────────
+# ── endpoint 5: chat ──────────────────────────────────────────────────────────
 @app.post("/chat")
 @limiter.limit("20/minute")
 async def chat(request: Request, req: ChatRequest):
     if not req.session_id or not req.message.strip():
         raise HTTPException(status_code=400, detail="session_id and message are required.")
 
-    # Fetch last 10 messages for context
     history = []
     if SUPABASE_URL and SUPABASE_KEY:
         try:
@@ -355,13 +375,11 @@ async def chat(request: Request, req: ChatRequest):
         except:
             history = []
 
-    # Build messages for LLM
     messages = [{"role": "system", "content": CHAT_SYSTEM_PROMPT}]
     for h in history:
         messages.append({"role": h["role"], "content": h["message"]})
     messages.append({"role": "user", "content": req.message})
 
-    # Call LLM
     try:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
@@ -374,7 +392,6 @@ async def chat(request: Request, req: ChatRequest):
     except Exception as e:
         reply = "I'm having trouble connecting right now. Please try again in a moment."
 
-    # Save both messages to Supabase
     if SUPABASE_URL and SUPABASE_KEY:
         try:
             async with httpx.AsyncClient() as client_http:
@@ -413,4 +430,4 @@ async def get_chat_history(request: Request, session_id: str):
 # ── health check ─────────────────────────────────────────────────────────────
 @app.get("/")
 async def root():
-    return {"status": "ScamShield API is running", "version": "3.0"}
+    return {"status": "ScamShield API is running", "version": "3.0", "ocr": "ready" if ocr_reader else "loading"}
